@@ -2,9 +2,22 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function (req, res) {
-    res.send('respond with a resource');
+
+
+const db = require('../db'); 
+
+// '/users' endpoint'i
+router.get('/', (req, res) => {
+    db.query('SELECT * FROM users', (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).send('Not connected to database');
+        } else {
+            console.log("Query Results: ", results);
+            res.json(results);
+        }
+    });
 });
 
 module.exports = router;
+
