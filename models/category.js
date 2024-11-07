@@ -1,4 +1,4 @@
-const pool = require('../db'); // MySQL
+const pool = require('./db');
 
 const Category = {
 

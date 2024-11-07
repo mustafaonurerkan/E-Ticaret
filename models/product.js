@@ -1,4 +1,4 @@
-const pool = require('../db'); // MySQL connection
+const pool = require('./db');
 
 const Product = {
     // Yeni ürün ekleme

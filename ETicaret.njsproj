@@ -32,6 +32,14 @@
     <Content Include=".env" />
     <Content Include=".eslintrc.json" />
     <Content Include="app.js" />
+    <Content Include="controllers\authController.js" />
+    <Content Include="controllers\cartController.js" />
+    <Content Include="controllers\categoryController.js" />
+    <Content Include="controllers\commentController.js" />
+    <Content Include="controllers\orderController.js" />
+    <Content Include="controllers\productController.js" />
+    <Content Include="controllers\userController.js" />
+    <Content Include="controllers\whishlistController.js" />
     <Content Include="db.js" />
     <Content Include="models\cart.js" />
     <Content Include="models\category.js" />
@@ -40,17 +48,25 @@
     <Content Include="models\product.js" />
     <Content Include="models\user.js" />
     <Content Include="models\wishlist.js" />
+    <Content Include="routes\authRoutes.js" />
+    <Content Include="routes\cartRoutes.js" />
+    <Content Include="routes\categoryRoutes.js" />
+    <Content Include="routes\commentRoutes.js" />
     <Content Include="routes\index.js" />
-    <Content Include="routes\users.js" />
+    <Content Include="routes\orderRoutes.js" />
+    <Content Include="routes\productRoutes.js" />
+    <Content Include="routes\userRoutes.js" />
     <Content Include="package.json" />
     <Content Include="public\stylesheets\main.css" />
     <Content Include="README.md" />
+    <Content Include="routes\whishlistRoutes.js" />
     <Content Include="views\index.pug" />
     <Content Include="views\layout.pug" />
     <Content Include="views\error.pug" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="models\" />
+    <Folder Include="controllers\" />
     <Folder Include="public\" />
     <Folder Include="public\images\" />
     <Folder Include="public\javascripts\" />
