@@ -12,7 +12,7 @@ require('dotenv').config();
 const app = express();
 const db = require('./db');
 
-app.use(cors({ origin: 'http://localhost:3000' })); // Replace with your React app’s origin
+app.use(cors({ origin: 'http://localhost:3004' })); // Replace with your React app’s origin
 
 
 // view engine setup
