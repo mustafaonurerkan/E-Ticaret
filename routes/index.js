@@ -1,38 +1,29 @@
-/*
-'use strict';
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-/* GET home page.
-router.get('/', function (req, res) {
-    res.render('index', { title: 'Express' });
+// Ana sayfa rotasý
+router.get('/', (req, res) => {
+    res.send('SA, TEAM10 HOMEPAGE, PLEASE TAKE OFF YOUR SHOES BEFORE ENTERING');
 });
 
+// Diðer rotalar
+const authRoutes = require('./authRoutes');
+const cartRoutes = require('./cartRoutes');
+const categoryRoutes = require('./categoryRoutes');
+const commentRoutes = require('./commentRoutes');
+const orderRoutes = require('./orderRoutes');
+const productRoutes = require('./productRoutes');
+const userRoutes = require('./userRoutes');
+const wishlistRoutes = require('./wishlistRoutes');
+
+// Rota dosyalarýný baðlayýn
+router.use('/auth', authRoutes);
+router.use('/cart', cartRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/comments', commentRoutes);
+router.use('/orders', orderRoutes);
+router.use('/products', productRoutes);
+router.use('/users', userRoutes);
+router.use('/wishlist', wishlistRoutes);
+
 module.exports = router;
-
-*/
-// index.js
-const express = require('express');
-const app = express();
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const productRoutes = require('./routes/productRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-const orderRoutes = require('./routes/orderRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
-const commentRoutes = require('./routes/commentRoutes');
-const wishlistRoutes = require('./routes/wishlistRoutes');
-
-app.use(express.json());
-
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/comments', commentRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
