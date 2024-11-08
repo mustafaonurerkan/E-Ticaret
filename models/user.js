@@ -12,17 +12,24 @@ const User = {
     },
 
     getAll: async () => {
-        const query = 'SELECT * FROM users;';
-        const [rows] = await pool.execute(query);
-        return rows;
+        try {
+            const [rows] = await pool.execute('SELECT * FROM users;'); // Veritabaný sorgusu
+            return rows;
+        } catch (error) {
+            console.error("Veritabaný getAll Hatasý:", error);
+            throw error;
+        }
     },
 
     getById: async (id) => {
-        const query = 'SELECT * FROM users WHERE id = ?;';
-        const [rows] = await pool.execute(query, [id]);
-        return rows[0];
+        try {
+            const [rows] = await pool.execute('SELECT * FROM users WHERE id = ?;', [id]);
+            return rows[0];
+        } catch (error) {
+            console.error("Veritabaný getById Hatasý:", error);
+            throw error;
+        }
     },
-
     update: async (id, user) => {
         const query = `
             UPDATE users

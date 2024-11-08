@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Ana sayfa rotasý
 router.get('/', (req, res) => {
-    res.send('SA, TEAM10 HOMEPAGE, PLEASE TAKE OFF YOUR SHOES BEFORE ENTERING');
+    res.send('SA, TEAM10 HOMEPAGE, PLEASE TAKE OFF YOUR SHOES BEFORE ENTERING ');
 });
 
 // Diðer rotalar

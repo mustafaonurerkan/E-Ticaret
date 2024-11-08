@@ -15,6 +15,10 @@ const db = require('./db');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users', userRoutes);
+
+
 // Orta katmanlarý (middleware) ayarlama
 app.use(logger('dev'));
 app.use(express.json()); // body-parser yerine express.json()
