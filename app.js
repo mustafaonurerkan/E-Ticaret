@@ -4,12 +4,16 @@ const express = require('express');
 const path = require('path');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
-const routes = require('./routes'); // routes klasöründeki index.js dosyasýný içe aktarýyoruz
+const routes = require('./routes'); // routes klasï¿½rï¿½ndeki index.js dosyasï¿½nï¿½ iï¿½e aktarï¿½yoruz
 require('dotenv').config();
 
 const app = express();
 const db = require('./db');
+
+app.use(cors({ origin: 'http://localhost:3000' })); // Replace with your React appâ€™s origin
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,26 +23,26 @@ const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
 
 
-// Orta katmanlarý (middleware) ayarlama
+// Orta katmanlarï¿½ (middleware) ayarlama
 app.use(logger('dev'));
 app.use(express.json()); // body-parser yerine express.json()
 app.use(express.urlencoded({ extended: false })); // body-parser yerine express.urlencoded()
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Tüm API rotalarýný /api yolunun altýnda toplama
+// Tï¿½m API rotalarï¿½nï¿½ /api yolunun altï¿½nda toplama
 app.use('/api', routes);
 
-// 404 hatasý için catch-all middleware
+// 404 hatasï¿½ iï¿½in catch-all middleware
 app.use((req, res, next) => {
     const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
-// Hata yönetimi
+// Hata yï¿½netimi
 
-// Geliþtirme ortamý için hata ayýklama
+// Geliï¿½tirme ortamï¿½ iï¿½in hata ayï¿½klama
 if (app.get('env') === 'development') {
     app.use((err, req, res, next) => {
         res.status(err.status || 500);
@@ -49,7 +53,7 @@ if (app.get('env') === 'development') {
     });
 }
 
-// Üretim ortamý için hata ayýklama (stacktrace yok)
+// ï¿½retim ortamï¿½ iï¿½in hata ayï¿½klama (stacktrace yok)
 app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.render('error', {
@@ -58,8 +62,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Sunucu baþlatma
-const PORT = process.env.PORT || 3000;
+// Sunucu baï¿½latma
+const PORT = 1337;
 app.set('port', PORT);
 
 const server = app.listen(PORT, () => {
