@@ -23,7 +23,7 @@ const User = {
 
     getById: async (id) => {
         try {
-            const [rows] = await pool.execute('SELECT * FROM users WHERE id = ?;', [id]);
+            const [rows] = await pool.execute('SELECT * FROM users WHERE user_id = ?;', [id]);
             return rows[0];
         } catch (error) {
             console.error("Veritabaný getById Hatasý:", error);
@@ -42,7 +42,7 @@ const User = {
     },
 
     delete: async (id) => {
-        const query = 'DELETE FROM users WHERE id = ?;';
+        const query = 'DELETE FROM users WHERE user_id = ?;';
         const [result] = await pool.execute(query, [id]);
         return result.affectedRows > 0;
     },

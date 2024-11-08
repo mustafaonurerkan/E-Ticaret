@@ -19,7 +19,7 @@ const Category = {
     },
 
     // Kategori güncelleme
-    update: async (id, name) => {
+    update: async (id, category_name) => {
         const query = `
       UPDATE categories
       SET category_name = ?
