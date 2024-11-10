@@ -18,3 +18,17 @@ exports.getCommentsByProductId = async (req, res) => {
         res.status(500).json({ error: 'Could not retrieve comments' });
     }
 };
+
+// Yorum silme
+exports.deleteComment = async (req, res) => {
+    try {
+        const success = await Comment.delete(req.params.id);
+        if (success) {
+            res.json({ message: 'Comment deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Comment not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not delete comment' });
+    }
+};
