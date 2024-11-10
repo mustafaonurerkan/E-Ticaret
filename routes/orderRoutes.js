@@ -1,26 +1,21 @@
 // routes/orderRoutes.js
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/order');
+const orderController = require('../controllers/orderController');
 
 // Sipariþ oluþturma
-router.post('/', async (req, res) => {
-    try {
-        const orderId = await Order.create(req.body);
-        res.status(201).json({ orderId });
-    } catch (error) {
-        res.status(500).json({ error: 'Sipariþ oluþturulamadý' });
-    }
-});
+router.post('/', orderController.createOrder);
 
 // Tüm sipariþleri listeleme
-router.get('/', async (req, res) => {
-    try {
-        const orders = await Order.getAll();
-        res.json(orders);
-    } catch (error) {
-        res.status(500).json({ error: 'Sipariþler getirilemedi' });
-    }
-});
+router.get('/', orderController.getAllOrders);
+
+// Belirli bir sipariþi ID’ye göre getirme
+router.get('/:id', orderController.getOrderById);
+
+// Sipariþ durumunu güncelleme
+router.put('/:id', orderController.updateOrderStatus);
+
+// Sipariþi silme
+router.delete('/:id', orderController.deleteOrder);
 
 module.exports = router;
