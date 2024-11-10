@@ -1,16 +1,18 @@
 // routes/categoryRoutes.js
 const express = require('express');
 const router = express.Router();
-const Category = require('../models/category');
+const categoryController = require('../controllers/categoryController');
 
 // Tüm kategorileri listeleme
-router.get('/', async (req, res) => {
-    try {
-        const categories = await Category.getAll();
-        res.json(categories);
-    } catch (error) {
-        res.status(500).json({ error: 'Kategoriler getirilemedi' });
-    }
-});
+router.get('/', categoryController.getAllCategories);
+
+// Yeni kategori ekleme
+router.post('/', categoryController.createCategory);
+
+// Kategori güncelleme
+router.put('/:id', categoryController.updateCategory);
+
+// Kategori silme
+router.delete('/:id', categoryController.deleteCategory);
 
 module.exports = router;
