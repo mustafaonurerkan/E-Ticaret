@@ -1,28 +1,21 @@
 // routes/cartRoutes.js
 const express = require('express');
 const router = express.Router();
-const Cart = require('../models/cart');
+const cartController = require('../controllers/cartController');
 
 // Sepete ürün ekleme veya güncelleme
-router.post('/add', async (req, res) => {
-    const { userId, productId, quantity } = req.body;
-    try {
-        await Cart.updateCart(userId, productId, quantity);
-        res.json({ message: 'Ürün sepete eklendi/güncellendi' });
-    } catch (error) {
-        res.status(500).json({ error: 'Sepete ürün eklenemedi' });
-    }
-});
+router.post('/add', cartController.addToCart);
 
 // Sepetten ürün kaldýrma
-router.delete('/remove', async (req, res) => {
-    const { userId, productId } = req.body;
-    try {
-        await Cart.removeFromCart(userId, productId);
-        res.json({ message: 'Ürün sepetten kaldýrýldý' });
-    } catch (error) {
-        res.status(500).json({ error: 'Ürün sepetten kaldýrýlamadý' });
-    }
-});
+router.delete('/remove', cartController.removeFromCart);
+
+// Sepeti temizleme
+router.post('/clear', cartController.clearCart);
+
+// Kullanýcýnýn sepetini ayrýntýlý olarak görüntüleme
+router.get('/:userId', cartController.getCart);
+
+// Kullanýcýnýn sepetini basit formatta görüntüleme
+router.get('/:userId/items', cartController.getByUserId);
 
 module.exports = router;
