@@ -2,11 +2,12 @@
 const Comment = require('../models/comment');
 
 exports.createComment = async (req, res) => {
+    const { userId, productId, rating, content } = req.body;
     try {
-        const commentId = await Comment.create(req.body);
-        res.status(201).json({ commentId });
+        const commentId = await Comment.create({ userId, productId, rating, content });
+        res.status(201).json({ commentId, message: 'Comment added successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Could not create comment' });
+        res.status(500).json({ error: 'Could not add comment' });
     }
 };
 

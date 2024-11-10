@@ -4,7 +4,7 @@ const router = express.Router();
 const commentController = require('../controllers/commentController');
 
 // Yorum ekleme
-router.post('/', commentController.createComment);
+router.post('/create', commentController.createComment);
 
 // Bir ürün için yorumlarý listeleme
 router.get('/product/:productId', commentController.getCommentsByProductId);
