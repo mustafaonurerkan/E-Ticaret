@@ -1,26 +1,21 @@
 // routes/productRoutes.js
 const express = require('express');
 const router = express.Router();
-const Product = require('../models/product');
+const productController = require('../controllers/productController'); // Model yerine controller kullanýmý
 
 // Tüm ürünleri listeleme
-router.get('/', async (req, res) => {
-    try {
-        const products = await Product.getAll();
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ error: 'Ürünler getirilemedi' });
-    }
-});
+router.get('/', productController.getAllProducts);
+
+// Belirli bir ürünü ID’ye göre getirme
+router.get('/:id', productController.getProductById);
 
 // Ürün oluþturma
-router.post('/', async (req, res) => {
-    try {
-        const productId = await Product.create(req.body);
-        res.status(201).json({ productId });
-    } catch (error) {
-        res.status(500).json({ error: 'Ürün oluþturulamadý' });
-    }
-});
+router.post('/', productController.createProduct);
+
+// Ürün güncelleme
+router.put('/:id', productController.updateProduct);
+
+// Ürün silme
+router.delete('/:id', productController.deleteProduct);
 
 module.exports = router;

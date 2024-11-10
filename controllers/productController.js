@@ -28,3 +28,31 @@ exports.createProduct = async (req, res) => {
         res.status(500).json({ error: 'Could not create product' });
     }
 };
+
+// Ürün güncelleme
+exports.updateProduct = async (req, res) => {
+    try {
+        const success = await Product.update(req.params.id, req.body);
+        if (success) {
+            res.json({ message: 'Product updated successfully' });
+        } else {
+            res.status(404).json({ error: 'Product not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not update product' });
+    }
+};
+
+// Ürün silme
+exports.deleteProduct = async (req, res) => {
+    try {
+        const success = await Product.delete(req.params.id);
+        if (success) {
+            res.json({ message: 'Product deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Product not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not delete product' });
+    }
+};
