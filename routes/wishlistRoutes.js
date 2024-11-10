@@ -1,26 +1,18 @@
 // routes/wishlistRoutes.js
 const express = require('express');
 const router = express.Router();
-const Wishlist = require('../models/wishlist');
+const wishlistController = require('../controllers/wishlistController');
 
 // Ýstek listesine ürün ekleme
-router.post('/', async (req, res) => {
-    try {
-        const wishlistId = await Wishlist.create(req.body);
-        res.status(201).json({ wishlistId });
-    } catch (error) {
-        res.status(500).json({ error: 'Ürün istek listesine eklenemedi' });
-    }
-});
+router.post('/', wishlistController.addToWishlist);
 
 // Kullanýcýnýn istek listesini getirme
-router.get('/user/:userId', async (req, res) => {
-    try {
-        const wishlist = await Wishlist.getByUserId(req.params.userId);
-        res.json(wishlist);
-    } catch (error) {
-        res.status(500).json({ error: 'Ýstek listesi getirilemedi' });
-    }
-});
+router.get('/user/:userId', wishlistController.getWishlistByUserId);
+
+// Belirli bir istek listesi ögesini silme
+router.delete('/:id', wishlistController.deleteWishlistItem);
+
+// Ýstek listesinde isim ile ürün arama
+router.get('/user/:userId/search', wishlistController.getByName);
 
 module.exports = router;

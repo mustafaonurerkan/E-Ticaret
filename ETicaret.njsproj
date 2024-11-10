@@ -39,7 +39,7 @@
     <Content Include="controllers\orderController.js" />
     <Content Include="controllers\productController.js" />
     <Content Include="controllers\userController.js" />
-    <Content Include="controllers\whishlistController.js" />
+    <Content Include="controllers\wishlistController.js" />
     <Content Include="db.js" />
     <Content Include="models\cart.js" />
     <Content Include="models\category.js" />
