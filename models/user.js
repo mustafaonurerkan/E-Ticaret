@@ -13,10 +13,10 @@ const User = {
 
     getAll: async () => {
         try {
-            const [rows] = await pool.execute('SELECT * FROM users;'); // Veritabaný sorgusu
+            const [rows] = await pool.execute('SELECT * FROM users;'); // Veritabanï¿½ sorgusu
             return rows;
         } catch (error) {
-            console.error("Veritabaný getAll Hatasý:", error);
+            console.error("Veritabanï¿½ getAll Hatasï¿½:", error);
             throw error;
         }
     },
@@ -26,7 +26,17 @@ const User = {
             const [rows] = await pool.execute('SELECT * FROM users WHERE user_id = ?;', [id]);
             return rows[0];
         } catch (error) {
-            console.error("Veritabaný getById Hatasý:", error);
+            console.error("Veritabanï¿½ getById Hatasï¿½:", error);
+            throw error;
+        }
+    },
+    getByEmail: async (email) => {
+        try {
+            const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?;', [email]);
+            console.log(rows[0])
+            return rows[0];
+        } catch (error) {
+            console.error("Veritabanï¿½ getByMail Hatasï¿½:", error);
             throw error;
         }
     },

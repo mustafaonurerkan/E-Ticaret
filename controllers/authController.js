@@ -17,14 +17,23 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
+        console.log("login içerisi")
         const user = await User.getByEmail(email);
+        console.log("login içerisi getByEmail sonrası")
         if (!user) return res.status(404).json({ error: 'User not found' });
-
+        console.log("login içerisi 24")
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Incorrect password' });
-
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token, message: 'Login successful' });
+        console.log("login içerisi 27")
+        console.log(user)
+        try {
+            const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            console.log("Token created:", token);
+            res.json({ token, message: 'Login successful' });
+        } catch (err) {
+            console.error("JWT Sign Error:", err);
+            res.status(500).json({ error: 'Token generation failed' });
+        }
     } catch (error) {
         res.status(500).json({ error: 'Login failed' });
     }
