@@ -56,3 +56,19 @@ exports.deleteProduct = async (req, res) => {
         res.status(500).json({ error: 'Could not delete product' });
     }
 };
+
+exports.getByCategory = async (req, res) => {
+    const { category } = req.params;
+
+    try {
+        const products = await Product.getByCategory(category);
+        if (products.length === 0) {
+            return res.status(404).json({ message: 'No products found in this category' });
+        }
+
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching products by category:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

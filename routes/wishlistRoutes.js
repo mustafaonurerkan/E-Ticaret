@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const wishlistController = require('../controllers/wishlistController');
+// get all
+router.get('/', wishlistController.getAllWishes)
 
 // Ýstek listesine ürün ekleme
 router.post('/', wishlistController.addToWishlist);

@@ -6,7 +6,7 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const routes = require('./routes'); // routes klas?r?ndeki index.js dosyas?n? i?e aktar?yoruz
+const routes = require('./routes'); 
 require('dotenv').config();
 
 const app = express();
@@ -18,9 +18,6 @@ app.use(cors({ origin: 'http://localhost:3000' })); // Replace with your React a
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-
-const userRoutes = require('./routes/userRoutes');
-app.use('/api/users', userRoutes);
 
 
 // Orta katmanlar? (middleware) ayarlama
@@ -40,18 +37,6 @@ app.use((req, res, next) => {
     next(err);
 });
 
-// Hata y?netimi
-
-// Geli?tirme ortam? i?in hata ay?klama
-if (app.get('env') === 'development') {
-    app.use((err, req, res, next) => {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
-}
 
 // ?retim ortam? i?in hata ay?klama (stacktrace yok)
 app.use((err, req, res, next) => {
@@ -65,6 +50,14 @@ app.use((err, req, res, next) => {
 // Sunucu ba?latma
 const PORT = 1337;
 app.set('port', PORT);
+
+const indexRouter = require('./routes/index');
+app.use('/api/', indexRouter);
+
+// Ana sayfayı /api/ adresine yönlendir
+app.get('/', (req, res) => {
+    res.redirect('/api/');
+});
 
 const server = app.listen(PORT, () => {
     debug('Express server listening on port ' + server.address().port);

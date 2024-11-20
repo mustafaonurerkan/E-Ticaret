@@ -2,18 +2,26 @@
 const Comment = require('../models/comment');
 
 exports.createComment = async (req, res) => {
-    const { userId, productId, rating, content } = req.body;
+    const { user_id, product_id, rating, content, approved } = req.body;
     try {
-        const commentId = await Comment.create({ userId, productId, rating, content });
-        res.status(201).json({ commentId, message: 'Comment added successfully' });
+        // Kullanýcýnýn ürünü satýn alýp almadýðýný kontrol et
+        const hasPurchased = await Comment.hasPurchased(user_id, product_id);
+        if (!hasPurchased) {
+            return res.status(403).json({ error: 'You cannot comment on a product you have not purchased.' });
+        }
+
+        // Yorum ekleme iþlemi
+        const commentId = await Comment.create({ user_id, product_id, rating, content });
+        res.status(201).json({ message: 'Comment added successfully', comment_id: commentId });
     } catch (error) {
-        res.status(500).json({ error: 'Could not add comment' });
+        console.error('Error creating comment:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 
 exports.getCommentsByProductId = async (req, res) => {
     try {
-        const comments = await Comment.getByProductId(req.params.productId);
+        const comments = await Comment.getByProductId(req.params.id);
         res.json(comments);
     } catch (error) {
         res.status(500).json({ error: 'Could not retrieve comments' });
@@ -33,3 +41,24 @@ exports.deleteComment = async (req, res) => {
         res.status(500).json({ error: 'Could not delete comment' });
     }
 };
+
+exports.getAllComments = async (req, res) => {
+    try {
+        const comments = await Comment.getAll();
+        res.json(comments);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve comments' });
+    }
+};
+
+exports.getUnapproved = async (req, res) => {
+    try {
+        const comments = await Comment.getUnapproved();
+        res.json(comments);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve unapproved comments' });
+    }
+};
+
+
+

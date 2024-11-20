@@ -51,3 +51,12 @@ exports.getByUserId = async (req, res) => {
         res.status(500).json({ error: 'Could not retrieve cart items' });
     }
 };
+
+exports.getAllCarts = async (req, res) => {
+    try {
+        const cart = await Cart.getAll();
+        res.json(cart);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve carts' });
+    }
+};

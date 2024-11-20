@@ -7,6 +7,7 @@ exports.createOrder = async (req, res) => {
         res.status(201).json({ orderId });
     } catch (error) {
         res.status(500).json({ error: 'Could not create order' });
+        console.log(error);
     }
 };
 
@@ -21,13 +22,23 @@ exports.getAllOrders = async (req, res) => {
 
 exports.getOrderById = async (req, res) => {
     try {
-        const order = await Order.getById(req.params.id);
-        if (!order) return res.status(404).json({ error: 'Order not found' });
+        const id = req.params.id; // URL'deki ID'yi alýn
+        if (!id) {
+            return res.status(400).json({ error: 'Order ID is required' });
+        }
+
+        const order = await Order.getById(id);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
         res.json(order);
     } catch (error) {
-        res.status(500).json({ error: 'Could not retrieve order' });
+        console.error("Error fetching order by ID:", error.message);
+        res.status(500).json({ error: 'Could not fetch order' });
     }
 };
+
 
 // Sipariþ durumunu güncelleme
 exports.updateOrderStatus = async (req, res) => {

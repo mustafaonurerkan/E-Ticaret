@@ -28,20 +28,20 @@ const Product = {
         const [rows] = await pool.execute(query);
         return rows;
     },
-
+    
     // Belirli bir ürünü ID’ye göre bulma
-    getById: async (id) => {
-        const query = 'SELECT * FROM products WHERE id = ?;';
-        const [rows] = await pool.execute(query, [id]);
+    getById: async (product_id) => {
+        const query = 'SELECT * FROM products WHERE product_id = ?;';
+        const [rows] = await pool.execute(query, [product_id]);
         return rows[0];
     },
 
     // Ürün güncelleme
-    update: async (id, product) => {
+    update: async (product_id, product) => {
         const query = `
       UPDATE products
       SET name = ?, model = ?, serial_number = ?, description = ?, quantity_in_stock = ?, price = ?, warranty_status = ?, distributor_info = ?, category_id = ?
-      WHERE id = ?;
+      WHERE product_id = ?;
     `;
         const values = [
             product.name,
@@ -60,10 +60,22 @@ const Product = {
     },
 
     // Ürün silme
-    delete: async (id) => {
-        const query = 'DELETE FROM products WHERE id = ?;';
-        const [result] = await pool.execute(query, [id]);
+    delete: async (product_id) => {
+        const query = 'DELETE FROM products WHERE product_id = ?;';
+        const [result] = await pool.execute(query, [product_id]);
         return result.affectedRows > 0;
+    },
+
+    // Belirli bir kategoriye göre tüm ürünler
+    getByCategory: async (categoryId) => {
+        const query = `
+            SELECT p.product_id, p.name, p.price, p.description
+            FROM products p
+            JOIN categories c ON p.category_id = c.category_id
+            WHERE c.category_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [categoryId]);
+        return rows;
     },
 };
 

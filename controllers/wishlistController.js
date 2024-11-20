@@ -2,13 +2,20 @@
 const Wishlist = require('../models/wishlist');
 
 exports.addToWishlist = async (req, res) => {
+    const { user_id, product_id } = req.body; // JSON isteðinden user_id ve product_id alýnýyor
     try {
-        const wishlistId = await Wishlist.create(req.body);
-        res.status(201).json({ wishlistId });
+        const success = await Wishlist.add(user_id, product_id);
+        if (success) {
+            res.status(201).json({ message: 'Product added to wishlist' });
+        } else {
+            res.status(400).json({ error: 'Could not add product to wishlist' });
+        }
     } catch (error) {
-        res.status(500).json({ error: 'Could not add product to wishlist' });
+        console.error("Error adding to wishlist:", error.message);
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
+
 
 exports.getWishlistByUserId = async (req, res) => {
     try {
@@ -16,6 +23,7 @@ exports.getWishlistByUserId = async (req, res) => {
         res.json(wishlist);
     } catch (error) {
         res.status(500).json({ error: 'Could not retrieve wishlist' });
+        console.log(error);
     }
 };
 
@@ -41,5 +49,15 @@ exports.getByName = async (req, res) => {
         res.json(items);
     } catch (error) {
         res.status(500).json({ error: 'Could not retrieve wishlist items by name' });
+    }
+};
+
+exports.getAllWishes = async (req, res) => {
+    try {
+        const wishlist = await Wishlist.getAll();
+        res.json(wishlist);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve wishlists' });
+        console.log(error);
     }
 };

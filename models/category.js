@@ -19,20 +19,20 @@ const Category = {
     },
 
     // Kategori güncelleme
-    update: async (id, category_name) => {
+    update: async (category_id, category_name) => {
         const query = `
       UPDATE categories
       SET category_name = ?
-      WHERE id = ?;
+      WHERE category_id = ?;
     `;
-        const [result] = await pool.execute(query, [category_name, id]);
+        const [result] = await pool.execute(query, [category_name, category_id]);
         return result.affectedRows > 0;
     },
 
     // Kategori silme
-    delete: async (id) => {
-        const query = 'DELETE FROM categories WHERE id = ?;';
-        const [result] = await pool.execute(query, [id]);
+    delete: async (category_id) => {
+        const query = 'DELETE FROM categories WHERE category_id = ?;';
+        const [result] = await pool.execute(query, [category_id]);
         return result.affectedRows > 0;
     },
 };

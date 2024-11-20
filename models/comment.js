@@ -3,14 +3,20 @@ const pool = require('../db');
 const Comment = {
 
     create: async (comment) => {
-        const query = `
-      INSERT INTO comments (user_id, product_id, rating, content, approved)
-      VALUES (?, ?, ?, ?, ?);
-    `;
-        const values = [comment.user_id, comment.product_id, comment.rating, comment.content, comment.approved];
-        const [result] = await pool.execute(query, values);
-        return result.insertId;
+        try {
+            const query = `
+            INSERT INTO comments (user_id, product_id, rating, content, approved)
+            VALUES (?, ?, ?, ?, ?);
+        `;
+            const values = [comment.user_id, comment.product_id, comment.rating, comment.content, false];
+            const [result] = await pool.execute(query, values);
+            return result.insertId;
+        } catch (error) {
+            console.error("Create Comment Error:", error.message);
+            throw error;
+        }
     },
+
 
     // Tüm yorumlar? listeleme
     getAll: async () => {
@@ -28,10 +34,33 @@ const Comment = {
 
     // Yorum silme
     delete: async (id) => {
-        const query = 'DELETE FROM comments WHERE id = ?;';
+        const query = 'DELETE FROM comments WHERE comment_id = ?;';
         const [result] = await pool.execute(query, [id]);
         return result.affectedRows > 0;
     },
+
+    // get unapproved
+    getUnapproved: async () => {
+        const query = `
+            SELECT * 
+            FROM comments 
+            WHERE approved = false;
+        `;
+        const [rows] = await pool.execute(query);
+        return rows;
+    },
+
+    // Kullanýcýnýn belirli bir ürünü satýn alýp almadýðýný kontrol et
+    hasPurchased: async (userId, productId) => {
+        const query = `
+            SELECT COUNT(*) AS order_count
+            FROM orders o
+            JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.user_id = ? AND oi.product_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [userId, productId]);
+        return rows[0].order_count > 0;
+    }
 };
 
 module.exports = Comment;

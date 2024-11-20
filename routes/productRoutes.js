@@ -18,4 +18,7 @@ router.put('/:id', productController.updateProduct);
 // Ürün silme
 router.delete('/:id', productController.deleteProduct);
 
+// Belirli bir kategorideki ürünleri listeleme
+router.get('/category/:category', productController.getByCategory);
+
 module.exports = router;

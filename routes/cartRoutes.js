@@ -3,6 +3,9 @@ const express = require('express');
 const router = express.Router();
 const cartController = require('../controllers/cartController');
 
+//get all
+router.get('/', cartController.getAllCarts);
+
 // Sepete ürün ekleme veya güncelleme
 router.post('/add', cartController.addToCart);
 

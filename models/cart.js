@@ -58,14 +58,26 @@ const Cart = {
 
     getCart: async (userId) => {
         const query = `
-            SELECT p.id, p.name, p.price, c.quantity
-            FROM cart c
-            JOIN products p ON c.product_id = p.id
-            WHERE c.user_id = ?;
+        SELECT 
+            c.cart_id AS cartId,
+            c.user_id AS userId,
+            c.product_id AS productId,
+            c.quantity,
+            p.name AS productName,
+            p.price AS productPrice
+        FROM cart c
+        JOIN products p ON c.product_id = p.product_id
+        WHERE c.user_id = ?;
         `;
         const [rows] = await pool.execute(query, [userId]);
         return rows;
-    }
+    },
+    getAll: async () => {
+        const query = 'SELECT * FROM cart;';
+        const [rows] = await pool.execute(query);
+        return rows;
+    },
+
 };
 
 module.exports = Cart;
