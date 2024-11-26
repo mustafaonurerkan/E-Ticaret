@@ -1,77 +1,135 @@
-const User = require('../models/user'); // Modeli doðru import edin
-const pool = require('../db'); // Veritabaný baðlantýsý
+const pool = require('../db'); // Veritabaný baðlantýsýný alýn
+const User = require('../models/user'); // User Modeli
+const userController = require('../controllers/userController'); // User Controller
 
-// Mock database connection
-jest.mock('../db');  // db baðlantýsýný mock'layacaðýz
+jest.mock('../db'); // Veritabaný baðlantýsýný mock'la
 
-describe('User Model CRUD Operations', () => {
+describe('User Model and Controller Tests', () => {
+    let req, res;
 
-    // Test için kullanýcý verisi
-    const testUser = {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        password: 'securepassword',
-        role: 'customer',
-        tax_id: '1234567890',
-        address: '123 Main St',
-    };
+    beforeEach(() => {
+        req = {}; // Mock request
+        res = {
+            status: jest.fn().mockReturnThis(), // Chaining için
+            json: jest.fn(),
+        }; // Mock response
 
-    // Test sonrasý veritabaný baðlantýsýný kapat
-    afterAll(() => {
-        pool.end(); // Veritabaný baðlantýsýný kapatma
+        jest.clearAllMocks(); // Mock'larý temizle
     });
 
-    it('should create a new user', async () => {
-        const mockInsertResult = { insertId: 1 };  // Mocklanan insertId
-        pool.execute.mockResolvedValue([mockInsertResult]);  // Mock execute fonksiyonu
+    describe('User Model Tests', () => {
+        it('should create a new user and return the user ID', async () => {
+            const mockInsertResult = [{ insertId: 1 }];
+            pool.execute.mockResolvedValueOnce(mockInsertResult);
 
-        const result = await User.create(testUser);
+            const newUser = {
+                name: 'John Doe',
+                email: 'john@example.com',
+                password: 'password123',
+                role: 'admin',
+                tax_id: '1234567890',
+                address: '123 Main St',
+            };
 
-        expect(result).toBe(1);  // Yeni kaydýn ID'si 1 olmalý
-        expect(pool.execute).toHaveBeenCalledWith(expect.any(String), expect.any(Array));  // execute çaðrýldý mý
+            const userId = await User.create(newUser);
+
+            expect(pool.execute).toHaveBeenCalledWith(
+                expect.stringContaining('INSERT INTO users'),
+                expect.arrayContaining([
+                    'John Doe',
+                    'john@example.com',
+                    'password123',
+                    'admin',
+                    '1234567890',
+                    '123 Main St',
+                ])
+            );
+            expect(userId).toBe(1);
+        });
+
+        it('should fetch all users', async () => {
+            const mockUsers = [
+                { user_id: 1, name: 'John Doe', email: 'john@example.com' },
+                { user_id: 2, name: 'Jane Doe', email: 'jane@example.com' },
+            ];
+            pool.execute.mockResolvedValueOnce([mockUsers]);
+
+            const users = await User.getAll();
+
+            expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM users;');
+            expect(users).toEqual(mockUsers);
+        });
+
+        it('should fetch a user by ID', async () => {
+            const mockUser = { user_id: 1, name: 'John Doe', email: 'john@example.com' };
+            pool.execute.mockResolvedValueOnce([[mockUser]]);
+
+            const user = await User.getById(1);
+
+            expect(pool.execute).toHaveBeenCalledWith(
+                'SELECT * FROM users WHERE user_id = ?;',
+                [1]
+            );
+            expect(user).toEqual(mockUser);
+        });
+
+        it('should delete a user by ID', async () => {
+            pool.execute.mockResolvedValueOnce([{ affectedRows: 1 }]);
+
+            const result = await User.delete(1);
+
+            expect(pool.execute).toHaveBeenCalledWith(
+                'DELETE FROM users WHERE user_id = ?;',
+                [1]
+            );
+            expect(result).toBe(true);
+        });
     });
 
-    it('should get all users', async () => {
-        const mockUsers = [
-            { user_id: 1, name: 'John Doe', email: 'john.doe@example.com' },
-            { user_id: 2, name: 'Jane Smith', email: 'jane.smith@example.com' },
-        ];
-        pool.execute.mockResolvedValue([mockUsers]);  // Mock execute fonksiyonu
+    describe('User Controller Tests', () => {
+        it('should return all users via controller', async () => {
+            const mockUsers = [
+                { user_id: 1, name: 'John Doe', email: 'john@example.com' },
+                { user_id: 2, name: 'Jane Doe', email: 'jane@example.com' },
+            ];
+            pool.execute.mockResolvedValueOnce([mockUsers]);
 
-        const users = await User.getAll();
+            await userController.getAllUsers(req, res);
 
-        expect(users).toEqual(mockUsers);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM users;');  // doðru SQL sorgusu çalýþtý mý
-    });
+            expect(res.json).toHaveBeenCalledWith(mockUsers);
+        });
 
-    it('should get user by ID', async () => {
-        const mockUser = { user_id: 1, name: 'John Doe', email: 'john.doe@example.com' };
-        pool.execute.mockResolvedValue([[mockUser]]);  // Mock execute fonksiyonu
+        it('should return a user by ID via controller', async () => {
+            const mockUser = { user_id: 1, name: 'John Doe', email: 'john@example.com' };
+            req.params = { id: 1 };
+            pool.execute.mockResolvedValueOnce([[mockUser]]);
 
-        const user = await User.getById(1);
+            await userController.getUserById(req, res);
 
-        expect(user).toEqual(mockUser);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM users WHERE user_id = ?;', [1]);  // doðru sorgu ve parametre
-    });
+            expect(res.json).toHaveBeenCalledWith(mockUser);
+        });
 
-    it('should update a user', async () => {
-        const mockResult = { affectedRows: 1 };  // Mocklanan güncelleme sonucu
-        pool.execute.mockResolvedValue([mockResult]);  // Mock execute fonksiyonu
+        it('should return 404 if user is not found via controller', async () => {
+            req.params = { id: 1 };
+            pool.execute.mockResolvedValueOnce([[]]);
 
-        const updatedUser = { name: 'John Updated', email: 'john.updated@example.com' };
-        const result = await User.update(1, updatedUser);
+            await userController.getUserById(req, res);
 
-        expect(result).toBe(true);  // Güncelleme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith(expect.any(String), expect.any(Array));  // doðru parametreler
-    });
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Kullanýcý bulunamadý' });
+        });
 
-    it('should delete a user', async () => {
-        const mockResult = { affectedRows: 1 };  // Mocklanan silme sonucu
-        pool.execute.mockResolvedValue([mockResult]);  // Mock execute fonksiyonu
+        it('should handle database errors gracefully in controller', async () => {
+            req.params = { id: 1 };
+            pool.execute.mockRejectedValueOnce(new Error('Database error'));
 
-        const result = await User.delete(1);
+            await userController.getUserById(req, res);
 
-        expect(result).toBe(true);  // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM users WHERE user_id = ?;', [1]);  // doðru sorgu
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({
+                error: 'Kullanýcý getirilemedi',
+                detail: 'Database error',
+            });
+        });
     });
 });

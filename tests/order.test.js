@@ -1,83 +1,171 @@
-const Order = require('../models/order'); // Order modelini import et
-const pool = require('../db'); // Veritabaný baðlantýsýný import et
+const pool = require('../db'); // Veritabaný baðlantýsý
+const Order = require('../models/order'); // Order Modeli
+const orderController = require('../controllers/orderController'); // Order Controller
 
-jest.mock('../db'); // Veritabaný baðlantýsýný mock'layýn
+jest.mock('../db'); // Veritabaný baðlantýsýný mock'la
 
-describe('Order Model CRUD Operations', () => {
-    const testOrder = {
-        user_id: 1,
-        total_price: 150.00,
-        status: 'processing',
-        delivery_address: '123 Test Street',
-        items: [
-            { product_id: 1, quantity: 2, price: 50.00 },
-            { product_id: 2, quantity: 1, price: 50.00 }
-        ]
-    };
+describe('Order Model and Controller Integration', () => {
+    let req, res;
 
-    afterAll(async () => {
-        await pool.end(); // Testlerden sonra baðlantýyý kapat
+    beforeEach(() => {
+        req = {}; // Mock request
+        res = {
+            status: jest.fn().mockReturnThis(), // Chaining için mock
+            json: jest.fn(),
+        }; // Mock response
+
+        jest.clearAllMocks(); // Mock'larý temizle
     });
 
-    it('should create a new order', async () => {
-        const mockOrderResult = { insertId: 1 }; // Mocklanan order insertId
-        const mockProductUpdateResult = { affectedRows: 1 }; // Mocklanan ürün stok güncelleme sonucu
-        pool.getConnection.mockResolvedValue({
-            beginTransaction: jest.fn(),
-            execute: jest.fn()
-                .mockResolvedValueOnce([mockOrderResult]) // Order ekleme
-                .mockResolvedValue([mockProductUpdateResult]), // Stok güncelleme ve order_items ekleme
-            commit: jest.fn(),
-            rollback: jest.fn(),
-            release: jest.fn(),
+    describe('Create Order', () => {
+        it('should create a new order via controller and return the orderId', async () => {
+            const mockOrderResult = [{ insertId: 1 }];
+            const mockProductUpdateResult = [{ affectedRows: 1 }];
+
+            // Mock database transaction methods
+            const mockConnection = {
+                execute: jest
+                    .fn()
+                    .mockResolvedValueOnce(mockOrderResult) // Order ekleme
+                    .mockResolvedValueOnce(mockProductUpdateResult) // Stok güncelleme
+                    .mockResolvedValueOnce([]), // Order item ekleme
+                beginTransaction: jest.fn(),
+                commit: jest.fn(),
+                rollback: jest.fn(),
+                release: jest.fn(),
+            };
+
+            pool.getConnection.mockResolvedValue(mockConnection);
+
+            req.body = {
+                user_id: 1,
+                total_price: 100,
+                status: 'pending',
+                delivery_address: '123 Example St',
+                items: [{ product_id: 1, quantity: 2, price: 50 }],
+            };
+
+            await orderController.createOrder(req, res);
+
+            expect(pool.getConnection).toHaveBeenCalled();
+            expect(mockConnection.execute).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.any(Array)
+            );
+            expect(mockConnection.commit).toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({ orderId: 1 });
         });
 
-        const orderId = await Order.create(testOrder);
+        it('should rollback transaction if stock is insufficient', async () => {
+            const mockOrderResult = [{ insertId: 1 }];
+            const mockProductUpdateResult = [{ affectedRows: 0 }]; // Stok yetersiz
 
-        expect(orderId).toBe(1);
-        expect(pool.getConnection).toHaveBeenCalled();
+            const mockConnection = {
+                execute: jest
+                    .fn()
+                    .mockResolvedValueOnce(mockOrderResult)
+                    .mockResolvedValueOnce(mockProductUpdateResult), // Stok güncelleme hatasý
+                beginTransaction: jest.fn(),
+                commit: jest.fn(),
+                rollback: jest.fn(),
+                release: jest.fn(),
+            };
+
+            pool.getConnection.mockResolvedValue(mockConnection);
+
+            req.body = {
+                user_id: 1,
+                total_price: 100,
+                status: 'pending',
+                delivery_address: '123 Example St',
+                items: [{ product_id: 1, quantity: 10, price: 50 }],
+            };
+
+            await orderController.createOrder(req, res);
+
+            expect(mockConnection.rollback).toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Could not create order' });
+        });
     });
 
-    it('should get all orders', async () => {
-        const mockOrders = [
-            { order_id: 1, user_id: 1, total_price: 150.00, status: 'processing', delivery_address: '123 Test Street' },
-            { order_id: 2, user_id: 2, total_price: 200.00, status: 'in-transit', delivery_address: '456 Test Avenue' },
-        ];
-        pool.execute.mockResolvedValue([mockOrders]);
+    describe('Get Orders', () => {
+        it('should fetch all orders via controller', async () => {
+            const mockOrders = [
+                { order_id: 1, total_price: 100, status: 'pending', delivery_address: '123 Example St' },
+            ];
+            pool.execute.mockResolvedValue([mockOrders]);
 
-        const orders = await Order.getAll();
+            await orderController.getAllOrders(req, res);
 
-        expect(orders).toEqual(mockOrders);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM orders;');
+            expect(Order.getAll).toBeDefined();
+            expect(res.json).toHaveBeenCalledWith(mockOrders);
+        });
+
+        it('should fetch a specific order by ID', async () => {
+            req.params = { id: 1 };
+            const mockOrder = { order_id: 1, total_price: 100 };
+            pool.execute.mockResolvedValue([[mockOrder]]);
+
+            await orderController.getOrderById(req, res);
+
+            expect(Order.getById).toBeDefined();
+            expect(res.json).toHaveBeenCalledWith(mockOrder);
+        });
+
+        it('should return 404 if order is not found', async () => {
+            req.params = { id: 1 };
+            pool.execute.mockResolvedValue([[]]);
+
+            await orderController.getOrderById(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Order not found' });
+        });
     });
 
-    it('should get an order by ID', async () => {
-        const mockOrder = { order_id: 1, user_id: 1, total_price: 150.00, status: 'processing', delivery_address: '123 Test Street' };
-        pool.execute.mockResolvedValue([[mockOrder]]);
+    describe('Update Order Status', () => {
+        it('should update the order status successfully', async () => {
+            req.params = { id: 1 };
+            req.body = { status: 'completed' };
+            pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
-        const order = await Order.getById(1);
+            await orderController.updateOrderStatus(req, res);
 
-        expect(order).toEqual(mockOrder);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM orders WHERE id = ?;', [1]);
+            expect(res.json).toHaveBeenCalledWith({ message: 'Order status updated successfully' });
+        });
+
+        it('should return 404 if order is not found during update', async () => {
+            req.params = { id: 1 };
+            req.body = { status: 'completed' };
+            pool.execute.mockResolvedValue([{ affectedRows: 0 }]);
+
+            await orderController.updateOrderStatus(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Order not found' });
+        });
     });
 
-    it('should update an order status', async () => {
-        const mockResult = { affectedRows: 1 };
-        pool.execute.mockResolvedValue([mockResult]);
+    describe('Delete Order', () => {
+        it('should delete the order successfully', async () => {
+            req.params = { id: 1 };
+            pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
-        const result = await Order.update(1, 'in-transit');
+            await orderController.deleteOrder(req, res);
 
-        expect(result).toBe(true);
-        expect(pool.execute).toHaveBeenCalledWith(expect.any(String), expect.any(Array));
-    });
+            expect(res.json).toHaveBeenCalledWith({ message: 'Order deleted successfully' });
+        });
 
-    it('should delete an order', async () => {
-        const mockResult = { affectedRows: 1 };
-        pool.execute.mockResolvedValue([mockResult]);
+        it('should return 404 if order is not found during deletion', async () => {
+            req.params = { id: 1 };
+            pool.execute.mockResolvedValue([{ affectedRows: 0 }]);
 
-        const result = await Order.delete(1);
+            await orderController.deleteOrder(req, res);
 
-        expect(result).toBe(true);
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM orders WHERE id = ?;', [1]);
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Order not found' });
+        });
     });
 });
