@@ -8,7 +8,7 @@ describe('Wishlist Model CRUD Operations', () => {
     // Test için wishlist örneði
     const testWishlist = {
         user_id: 1,
-        product_id: 101,
+        product_id: 1,
     };
 
     afterAll(async () => {
@@ -19,7 +19,7 @@ describe('Wishlist Model CRUD Operations', () => {
         const mockInsertResult = { insertId: 1 };  // Mocklanan insertId
         pool.execute.mockResolvedValue([mockInsertResult]);  // execute fonksiyonunu mock'la
 
-        const result = await Wishlist.create(testWishlist);
+        const result = await Wishlist.add(testWishlist);
 
         expect(result).toBe(1);  // Yeni kaydýn ID'si 1 olmalý
         expect(pool.execute).toHaveBeenCalledWith(expect.any(String), expect.any(Array));  // execute çaðrýldý mý
@@ -27,8 +27,8 @@ describe('Wishlist Model CRUD Operations', () => {
 
     it('should get wishlist items by user ID', async () => {
         const mockWishlistItems = [
-            { wishlist_id: 1, user_id: 1, product_id: 101 },
-            { wishlist_id: 2, user_id: 1, product_id: 102 },
+            { wishlist_id: 1, user_id: 1, product_id: 1 },
+            { wishlist_id: 2, user_id: 1, product_id: 2 },
         ];
         pool.execute.mockResolvedValue([mockWishlistItems]);  // execute fonksiyonunu mock'la
 
@@ -45,6 +45,6 @@ describe('Wishlist Model CRUD Operations', () => {
         const result = await Wishlist.delete(1);
 
         expect(result).toBe(true);  // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM wishlists WHERE id = ?;', [1]);  // doðru sorgu
+        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM wishlists WHERE wishlist_id = ?;', [1]);  // doðru sorgu
     });
 });
