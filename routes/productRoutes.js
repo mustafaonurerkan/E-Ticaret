@@ -21,4 +21,9 @@ router.delete('/:id', productController.deleteProduct);
 // Belirli bir kategorideki ürünleri listeleme
 router.get('/category/:category', productController.getByCategory);
 
+// Ürüne týklamayý loglama ve popülerlik arttýrma
+router.post('/click/:id', productController.logClick);
+
+// Toplu ürün ekleme
+router.post('/bulk', productController.createBulkProduct);
 module.exports = router;

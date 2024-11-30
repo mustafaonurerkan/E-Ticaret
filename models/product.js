@@ -4,8 +4,8 @@ const Product = {
     // Yeni ürün ekleme
     create: async (product) => {
         const query = `
-      INSERT INTO products (name, model, serial_number, description, quantity_in_stock, price, warranty_status, distributor_info, category_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO products (name, model, serial_number, description, quantity_in_stock, price, warranty_status, distributor_info, category_id, sizes, photo_url, popularity)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
         const values = [
             product.name,
@@ -17,6 +17,9 @@ const Product = {
             product.warranty_status,
             product.distributor_info,
             product.category_id,
+            product.sizes,
+            product.photo_url,
+            product.popularity
         ];
         const [result] = await pool.execute(query, values);
         return result.insertId;
@@ -40,7 +43,7 @@ const Product = {
     update: async (product_id, product) => {
         const query = `
       UPDATE products
-      SET name = ?, model = ?, serial_number = ?, description = ?, quantity_in_stock = ?, price = ?, warranty_status = ?, distributor_info = ?, category_id = ?
+      SET name = ?, model = ?, serial_number = ?, description = ?, quantity_in_stock = ?, price = ?, warranty_status = ?, distributor_info = ?, category_id = ?, sizes = ?, photo_url = ?, popularity = ?
       WHERE product_id = ?;
     `;
         const values = [
@@ -53,7 +56,10 @@ const Product = {
             product.warranty_status,
             product.distributor_info,
             product.category_id,
-            id,
+            product.sizes,
+            product.photo_url,
+            product.popularity,
+            product_id,
         ];
         const [result] = await pool.execute(query, values);
         return result.affectedRows > 0;
@@ -77,6 +83,15 @@ const Product = {
         const [rows] = await pool.execute(query, [categoryId]);
         return rows;
     },
+
+    incrementPopularity: async (id) => {
+        const [result] = await pool.execute( // `db.query` yerine `pool.execute` kullanmalýsýnýz.
+            'UPDATE products SET popularity = popularity + 0.5 WHERE product_id = ?',
+            [id]
+        );
+        return result.affectedRows > 0;
+    }
+
 };
 
 module.exports = Product;
