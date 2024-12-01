@@ -100,6 +100,18 @@ const Order = {
         const [result] = await pool.execute(query, [order_id]);
         return result.affectedRows > 0;
     },
+
+    // Order history by name
+    getByUsername: async (username) => {
+        const query = `
+            SELECT o.order_id, o.total_price, o.status, o.created_at, o.delivery_address
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            WHERE u.name = ?;
+        `;
+        const [rows] = await pool.execute(query, [username]);
+        return rows;
+    },
 };
 
 module.exports = Order;

@@ -68,3 +68,19 @@ exports.deleteOrder = async (req, res) => {
         res.status(500).json({ error: 'Could not delete order' });
     }
 };
+
+exports.getOrderByUsername = async (req, res) => {
+    const { username } = req.params; 
+
+    try {
+        const orders = await Order.getByUsername(username);
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No orders found for this username' });
+        }
+
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching orders by username:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
