@@ -75,7 +75,7 @@ const Product = {
     // Belirli bir kategoriye göre tüm ürünler
     getByCategory: async (categoryId) => {
         const query = `
-            SELECT p.product_id, p.name, p.price, p.description
+            SELECT p.product_id, p.name, p.price, p.description, p.photo_url, p.popularity
             FROM products p
             JOIN categories c ON p.category_id = c.category_id
             WHERE c.category_id = ?;
