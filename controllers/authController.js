@@ -19,7 +19,7 @@ exports.login = async (req, res) => {
     try {
         console.log("login içerisi");
         const user = await User.getByEmail(email);
-        console.log("login içerisi getByEmail sonrası");
+        console.log(user);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         console.log("login içerisi 24");
@@ -40,10 +40,13 @@ exports.login = async (req, res) => {
             console.log("Token created:", token);
 
             // Token ile birlikte kullanıcı ismini dön
+            console.log(user.id)
             res.json({
                 token,
                 name: user.name, // Kullanıcı adı
-                message: 'Login successful'
+                message: 'Login successful',
+                userIdNumber: user.user_id/*burası*/
+                
             });
         } catch (err) {
             console.error("JWT Sign Error:", err);
