@@ -58,6 +58,6 @@ describe('Comment Model CRUD Operations', () => {
         const result = await Comment.delete(1);
 
         expect(result).toBe(true); // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM comments WHERE id = ?;', [1]);
+        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM comments WHERE comment_id = ?;', [1]);
     });
 });

@@ -51,6 +51,6 @@ describe('Category Model CRUD Operations', () => {
         const result = await Category.delete(1);
 
         expect(result).toBe(true); // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM categories WHERE id = ?;', [1]);
+        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM categories WHERE category_id = ?;', [1]);
     });
 });

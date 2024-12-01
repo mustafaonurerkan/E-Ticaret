@@ -51,7 +51,7 @@ describe('Product Model CRUD Operations', () => {
         const product = await Product.getById(1);
 
         expect(product).toEqual(mockProduct);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM products WHERE id = ?;', [1]);  // doðru sorgu
+        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM products WHERE product_id = ?;', [1]);  // doðru sorgu
     });
 
     it('should update a product', async () => {
@@ -72,6 +72,6 @@ describe('Product Model CRUD Operations', () => {
         const result = await Product.delete(1);
 
         expect(result).toBe(true);  // Silme baþarýlýysa true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM products WHERE id = ?;', [1]);  // doðru sorgu
+        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM products WHERE product_id = ?;', [1]);  // doðru sorgu
     });
 });
