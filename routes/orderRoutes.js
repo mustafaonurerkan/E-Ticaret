@@ -18,4 +18,7 @@ router.put('/:id', orderController.updateOrderStatus);
 // Sipariþi silme
 router.delete('/:id', orderController.deleteOrder);
 
+// To get order history
+router.get('/username/:username', orderController.getOrderByUsername);
+
 module.exports = router;
