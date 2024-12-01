@@ -27,6 +27,7 @@ const orderRoutes = require('./orderRoutes');
 const productRoutes = require('./productRoutes');
 const userRoutes = require('./userRoutes');
 const wishlistRoutes = require('./wishlistRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Rota dosyalarýný baðlayýn
 router.use('/auth', authRoutes);
@@ -37,5 +38,6 @@ router.use('/orders', orderRoutes);
 router.use('/products', productRoutes);
 router.use('/users', userRoutes);
 router.use('/wishlists', wishlistRoutes);
+router.use('/payments', paymentRoutes);
 
 module.exports = router;
