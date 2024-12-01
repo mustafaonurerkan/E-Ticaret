@@ -12,4 +12,7 @@ router.get('/:id', userController.getUserById);
 // Kullanýcý silme
 router.delete('/:id', userController.deleteUser);
 
+// Kullanýcý bilgisi update
+router.put('/:id', userController.updateUser);
+
 module.exports = router;

@@ -36,3 +36,16 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+exports.updateUser = async (req, res) => {
+    try {
+        const success = await User.update(req.params.id, req.body);
+        if (success) {
+            res.json({ message: 'User updated successfully' });
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not update user' });
+    }
+};
