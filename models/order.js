@@ -77,10 +77,47 @@ const Order = {
     },
 
     // Belirli bir sipari?i ID’ye göre bulma
-    getById: async (order_id) => {
-        const query = 'SELECT * FROM orders WHERE order_id = ?;';
-        const [rows] = await pool.execute(query, [order_id]);
-        return rows[0];
+    getById: async (id) => {
+        const query = `
+            SELECT 
+                o.order_id, 
+                o.user_id, 
+                o.total_price, 
+                o.status, 
+                o.delivery_address, 
+                o.created_at, 
+                oi.product_id, 
+                oi.quantity, 
+                oi.price AS item_price, 
+                p.name AS product_name
+            FROM orders o
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.product_id
+            WHERE o.order_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [id]);
+
+        if (rows.length === 0) {
+            return null; // Eðer sipariþ bulunamazsa
+        }
+
+        // Sipariþ detaylarýný formatlamak
+        const order = {
+            order_id: rows[0].order_id,
+            user_id: rows[0].user_id,
+            total_price: rows[0].total_price,
+            status: rows[0].status,
+            delivery_address: rows[0].delivery_address,
+            created_at: rows[0].created_at,
+            items: rows.map(row => ({
+                product_id: row.product_id,
+                product_name: row.product_name,
+                quantity: row.quantity,
+                price: row.item_price
+            }))
+        };
+
+        return order;
     },
 
     // Sipari? durumu güncelleme
