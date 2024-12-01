@@ -9,4 +9,7 @@ router.get('/', userController.getAllUsers);
 // Belirli bir kullanýcýyý ID’ye göre getirme
 router.get('/:id', userController.getUserById);
 
+// Kullanýcý silme
+router.delete('/:id', userController.deleteUser);
+
 module.exports = router;
