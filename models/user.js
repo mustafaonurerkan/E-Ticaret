@@ -60,14 +60,10 @@ const User = {
     update: async (user_id, user) => {
         const query = `
       UPDATE users
-      SET name = ?, email = ?, password = ?, role = ?, tax_id = ?, address = ?
+      SET tax_id = ?, address = ?
       WHERE user_id = ?;
     `;
         const values = [
-            user.name,
-            user.email,
-            user.password,
-            user.role,
             user.tax_id,
             user.address,
             user_id,
