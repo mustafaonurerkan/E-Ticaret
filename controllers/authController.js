@@ -43,7 +43,8 @@ exports.login = async (req, res) => {
             res.json({
                 token,
                 name: user.name, // Kullanıcı adı
-                message: 'Login successful'
+                message: 'Login successful',
+                userIdNumber: user.id
             });
         } catch (err) {
             console.error("JWT Sign Error:", err);
