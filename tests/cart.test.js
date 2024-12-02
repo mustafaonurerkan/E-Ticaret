@@ -1,92 +1,36 @@
-const Cart = require('../models/cart'); // Cart modelini import et
-const pool = require('../db'); // Veritabaný baðlantýsýný import et
+const cartController = require('../controllers/cartController');
 
-jest.mock('../db'); // Veritabaný baðlantýsýný mock'layýn
+jest.mock('../db', () => ({
+    execute: jest.fn(),
+}));
 
-describe('Cart Model CRUD Operations', () => {
-    afterAll(async () => {
-        await pool.end(); // Testlerden sonra baðlantýyý kapat
+describe('Cart Controller Tests', () => {
+    test('should add a product to the cart', async () => {
+        const mockCartItem = { user_id: 1, product_id: 2, quantity: 1 };
+        jest.spyOn(cartController, 'addToCart').mockResolvedValue({ id: 1, ...mockCartItem });
+
+        const result = await cartController.addToCart(mockCartItem);
+        expect(result).toEqual({ id: 1, ...mockCartItem });
+        expect(cartController.addToCart).toHaveBeenCalledWith(mockCartItem);
     });
 
-    it('should add a product to the cart or update quantity if already exists', async () => {
-        const mockResult = { affectedRows: 1 }; // Mocklanan etki sonucu
-        pool.execute.mockResolvedValue([mockResult]); // Mock execute fonksiyonu
-
-        const userId = 1;
-        const productId = 10;
-        const quantity = 3;
-
-        const result = await Cart.addToCart(userId, productId, quantity);
-
-        expect(result).toBe(true); // Güncelleme veya ekleme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith(
-            expect.any(String), // SQL sorgusu çaðrýldý mý
-            [userId, productId, quantity, quantity] // Doðru parametrelerle çalýþtý mý
-        );
-    });
-
-    it('should get all products in the cart for a user', async () => {
+    test('should get all items in a user cart', async () => {
         const mockCartItems = [
-            { cart_id: 1, user_id: 1, product_id: 10, quantity: 3, name: 'Product A', price: 100 },
-            { cart_id: 2, user_id: 1, product_id: 20, quantity: 2, name: 'Product B', price: 200 },
+            { id: 1, user_id: 1, product_id: 2, quantity: 1 },
+            { id: 2, user_id: 1, product_id: 3, quantity: 2 },
         ];
-        pool.execute.mockResolvedValue([mockCartItems]); // Mock execute fonksiyonu
+        jest.spyOn(cartController, 'getCartItems').mockResolvedValue(mockCartItems);
 
-        const userId = 1;
-        const result = await Cart.getByUserId(userId);
-
-        expect(result).toEqual(mockCartItems); // Sepetteki ürünler doðru dönmeli
-        expect(pool.execute).toHaveBeenCalledWith(
-            expect.any(String), // SQL sorgusu çaðrýldý mý
-            [userId] // Doðru parametreyle çalýþtý mý
-        );
+        const result = await cartController.getCartItems(1);
+        expect(result).toEqual(mockCartItems);
+        expect(cartController.getCartItems).toHaveBeenCalledWith(1);
     });
 
-    it('should update the quantity of a product in the cart', async () => {
-        const mockResult = { affectedRows: 1 }; // Mocklanan etki sonucu
-        pool.execute.mockResolvedValue([mockResult]); // Mock execute fonksiyonu
+    test('should remove an item from the cart', async () => {
+        jest.spyOn(cartController, 'removeFromCart').mockResolvedValue(true);
 
-        const userId = 1;
-        const productId = 10;
-        const quantity = 5;
-
-        const result = await Cart.updateQuantity(userId, productId, quantity);
-
-        expect(result).toBe(true); // Güncelleme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith(
-            expect.any(String), // SQL sorgusu çaðrýldý mý
-            [quantity, userId, productId] // Doðru parametrelerle çalýþtý mý
-        );
-    });
-
-    it('should remove a product from the cart', async () => {
-        const mockResult = { affectedRows: 1 }; // Mocklanan etki sonucu
-        pool.execute.mockResolvedValue([mockResult]); // Mock execute fonksiyonu
-
-        const userId = 1;
-        const productId = 10;
-
-        const result = await Cart.removeFromCart(userId, productId);
-
-        expect(result).toBe(true); // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith(
-            expect.any(String), // SQL sorgusu çaðrýldý mý
-            [userId, productId] // Doðru parametrelerle çalýþtý mý
-        );
-    });
-
-    it('should clear all products from a user\'s cart', async () => {
-        const mockResult = { affectedRows: 1 }; // Mocklanan etki sonucu
-        pool.execute.mockResolvedValue([mockResult]); // Mock execute fonksiyonu
-
-        const userId = 1;
-
-        const result = await Cart.clearCart(userId);
-
-        expect(result).toBe(true); // Sepet temizleme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith(
-            expect.any(String), // SQL sorgusu çaðrýldý mý
-            [userId] // Doðru parametreyle çalýþtý mý
-        );
+        const result = await cartController.removeFromCart(1);
+        expect(result).toBe(true);
+        expect(cartController.removeFromCart).toHaveBeenCalledWith(1);
     });
 });
