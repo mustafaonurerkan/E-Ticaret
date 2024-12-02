@@ -6,62 +6,55 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const routes = require('./routes'); 
-require('dotenv').config();
+require('dotenv').config(); // .env dosyas?n? yükleme
+const routes = require('./routes'); // Tüm API rotalar?
+const db = require('./db'); // Veritaban? ba?lant?s?
 
 const app = express();
-const db = require('./db');
 
-app.use(cors({ origin: 'http://localhost:3000' })); // Replace with your React app’s origin
+// CORS ayarlar?
+app.use(cors({ origin: 'http://localhost:3000' })); // React uygulaman?z?n origin'iyle de?i?tirin
 
-
-// view engine setup
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-
-// Orta katmanlar? (middleware) ayarlama
+// Middleware ayarlar?
 app.use(logger('dev'));
-app.use(express.json()); // body-parser yerine express.json()
-app.use(express.urlencoded({ extended: false })); // body-parser yerine express.urlencoded()
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// T?m API rotalar?n? /api yolunun alt?nda toplama
+// Ana sayfay? /api'ye yönlendirme
+app.get('/', (req, res) => {
+    res.redirect('/api');
+});
+
+// Tüm API rotalar?n? /api yolunun alt?na ba?lama
 app.use('/api', routes);
 
-// 404 hatas? i?in catch-all middleware
+// 404 hatas? için catch-all middleware
 app.use((req, res, next) => {
     const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
-
-// ?retim ortam? i?in hata ay?klama (stacktrace yok)
+// Hata ay?klama middleware
 app.use((err, req, res, next) => {
     res.status(err.status || 500);
-    res.render('error', {
+    res.json({
         message: err.message,
-        error: {}
+        error: process.env.NODE_ENV === 'development' ? err : {}
     });
 });
 
-// Sunucu ba?latma
+// Sunucuyu ba?latma
 const PORT = 1337;
-app.set('port', PORT);
-
-const indexRouter = require('./routes/index');
-app.use('/api/', indexRouter);
-
-// Ana sayfayý /api/ adresine yönlendir
-app.get('/', (req, res) => {
-    res.redirect('/api/');
-});
-
 const server = app.listen(PORT, () => {
     debug('Express server listening on port ' + server.address().port);
-    console.log(`Server is running on port: ${server.address().port}`);
+    console.log(`Server is running on http://localhost:${PORT}/api`);
 });
 
 module.exports = app;
