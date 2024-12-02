@@ -4,7 +4,7 @@ const router = express.Router();
 // Ana sayfa için yönlendirme
 router.get('/', (req, res) => {
     const asciiArt = `
-       deneme icin nas?l denedim belli degil
+       WELCOME TO OUR ETICARET WEBSITE :)
     `;
     res.send(`
         <html>
