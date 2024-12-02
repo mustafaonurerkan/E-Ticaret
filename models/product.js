@@ -1,7 +1,7 @@
 const pool = require('../db');
 
 const Product = {
-    // Yeni ¸r¸n ekleme
+    // Yeni ÔøΩrÔøΩn ekleme
     create: async (product) => {
         const query = `
       INSERT INTO products (name, model, serial_number, description, quantity_in_stock, price, warranty_status, distributor_info, category_id, sizes, photo_url, popularity)
@@ -25,21 +25,21 @@ const Product = {
         return result.insertId;
     },
 
-    // T¸m ¸r¸nleri listeleme
+    // TÔøΩm ÔøΩrÔøΩnleri listeleme
     getAll: async () => {
         const query = 'SELECT * FROM products;';
         const [rows] = await pool.execute(query);
         return rows;
     },
     
-    // Belirli bir ¸r¸n¸ IDíye gˆre bulma
+    // Belirli bir ÔøΩrÔøΩnÔøΩ IDÔøΩye gÔøΩre bulma
     getById: async (product_id) => {
         const query = 'SELECT * FROM products WHERE product_id = ?;';
         const [rows] = await pool.execute(query, [product_id]);
         return rows[0];
     },
 
-    // ‹r¸n g¸ncelleme
+    // ÔøΩrÔøΩn gÔøΩncelleme
     update: async (product_id, product) => {
         const query = `
       UPDATE products
@@ -65,14 +65,14 @@ const Product = {
         return result.affectedRows > 0;
     },
 
-    // ‹r¸n silme
+    // ÔøΩrÔøΩn silme
     delete: async (product_id) => {
         const query = 'DELETE FROM products WHERE product_id = ?;';
         const [result] = await pool.execute(query, [product_id]);
         return result.affectedRows > 0;
     },
 
-    // Belirli bir kategoriye gˆre t¸m ¸r¸nler
+    // Belirli bir kategoriye gÔøΩre tÔøΩm ÔøΩrÔøΩnler
     getByCategory: async (categoryId) => {
         const query = `
             SELECT p.product_id, p.name, p.price, p.description, p.photo_url, p.popularity
@@ -85,12 +85,26 @@ const Product = {
     },
 
     incrementPopularity: async (id) => {
-        const [result] = await pool.execute( // `db.query` yerine `pool.execute` kullanmal˝s˝n˝z.
+        const [result] = await pool.execute( // `db.query` yerine `pool.execute` kullanmalÔøΩsÔøΩnÔøΩz.
             'UPDATE products SET popularity = popularity + 0.5 WHERE product_id = ?',
             [id]
         );
         return result.affectedRows > 0;
-    }
+    },
+
+    searchByKey: async (key) => {
+        const query = `
+            SELECT product_id, name
+            FROM products
+            WHERE name LIKE ?
+            LIMIT 5; -- Sadece ilk 5 √ºr√ºn√º getir
+        `;
+        const searchKey = `%${key}%`; // Anahtar kelimeyi i√ßeren √ºr√ºnleri arar
+        const [rows] = await pool.execute(query, [searchKey]);
+        return rows;
+    },
+    
+    
 
 };
 

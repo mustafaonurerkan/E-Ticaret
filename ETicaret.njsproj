@@ -37,6 +37,7 @@
     <Content Include="controllers\categoryController.js" />
     <Content Include="controllers\commentController.js" />
     <Content Include="controllers\orderController.js" />
+    <Content Include="controllers\paymentController.js" />
     <Content Include="controllers\productController.js" />
     <Content Include="controllers\userController.js" />
     <Content Include="controllers\wishlistController.js" />
@@ -45,6 +46,7 @@
     <Content Include="models\category.js" />
     <Content Include="models\comment.js" />
     <Content Include="models\order.js" />
+    <Content Include="models\payment.js" />
     <Content Include="models\product.js" />
     <Content Include="models\user.js" />
     <Content Include="models\wishlist.js" />
@@ -54,6 +56,7 @@
     <Content Include="routes\commentRoutes.js" />
     <Content Include="routes\index.js" />
     <Content Include="routes\orderRoutes.js" />
+    <Content Include="routes\paymentRoutes.js" />
     <Content Include="routes\productRoutes.js" />
     <Content Include="routes\userRoutes.js" />
     <Content Include="package.json" />

@@ -12,19 +12,19 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
     try {
-        // Ürünü ID'ye göre veritabanından al
+        // ï¿½rï¿½nï¿½ ID'ye gï¿½re veritabanï¿½ndan al
         const product = await Product.getById(req.params.id);
         if (!product) return res.status(404).json({ error: 'Product not found' });
 
-        // Ürün bulunduysa popülerlik artırma fonksiyonunu çağır
+        // ï¿½rï¿½n bulunduysa popï¿½lerlik artï¿½rma fonksiyonunu ï¿½aï¿½ï¿½r
         const popularityUpdated = await Product.incrementPopularity(req.params.id);
 
-        // Eğer popülerlik başarıyla arttıysa, güncel popülerlik değeri ile ürünü döndür
+        // Eï¿½er popï¿½lerlik baï¿½arï¿½yla arttï¿½ysa, gï¿½ncel popï¿½lerlik deï¿½eri ile ï¿½rï¿½nï¿½ dï¿½ndï¿½r
         if (popularityUpdated) {
-            const updatedProduct = await Product.getById(req.params.id); // Popülerlik sonrası güncel ürünü tekrar getir
-            res.json(updatedProduct); // Güncel ürünü döndür
+            const updatedProduct = await Product.getById(req.params.id); // Popï¿½lerlik sonrasï¿½ gï¿½ncel ï¿½rï¿½nï¿½ tekrar getir
+            res.json(updatedProduct); // Gï¿½ncel ï¿½rï¿½nï¿½ dï¿½ndï¿½r
         } else {
-            res.json(product); // Eğer popülerlik arttırılamadıysa, orijinal ürünü döndür
+            res.json(product); // Eï¿½er popï¿½lerlik arttï¿½rï¿½lamadï¿½ysa, orijinal ï¿½rï¿½nï¿½ dï¿½ndï¿½r
         }
 
     } catch (error) {
@@ -43,7 +43,7 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-// Ürün güncelleme
+// ï¿½rï¿½n gï¿½ncelleme
 exports.updateProduct = async (req, res) => {
     try {
         const success = await Product.update(req.params.id, req.body);
@@ -57,7 +57,7 @@ exports.updateProduct = async (req, res) => {
     }
 };
 
-// Ürün silme
+// ï¿½rï¿½n silme
 exports.deleteProduct = async (req, res) => {
     try {
         const success = await Product.delete(req.params.id);
@@ -88,11 +88,11 @@ exports.getByCategory = async (req, res) => {
 };
 
 
-// Ürüne tıklama loglama ve popülerliği artırma
+// ï¿½rï¿½ne tï¿½klama loglama ve popï¿½lerliï¿½i artï¿½rma
 exports.logClick = async (req, res) => {
     const productId = req.params.id;
     try {
-        // Popülerliği artır
+        // Popï¿½lerliï¿½i artï¿½r
         const success = await Product.incrementPopularity(productId);
 
         if (success) {
@@ -107,18 +107,34 @@ exports.logClick = async (req, res) => {
 };
 
 
-// Toplu ürün ekleme
+// Toplu ï¿½rï¿½n ekleme
 exports.createBulkProduct = async (req, res) => {
     const products = req.body; // Gelen JSON dizisini al
     try {
         const result = [];
         for (const product of products) {
-            const newProduct = await Product.create(product); // Her bir ürünü veritabanına ekle
-            result.push(newProduct); // Başarılı ürünleri diziye ekle
+            const newProduct = await Product.create(product); // Her bir ï¿½rï¿½nï¿½ veritabanï¿½na ekle
+            result.push(newProduct); // Baï¿½arï¿½lï¿½ ï¿½rï¿½nleri diziye ekle
         }
-        res.status(201).json({ success: true, data: result }); // Tüm eklenen ürünlerin başarıyla döndürülmesi
+        res.status(201).json({ success: true, data: result }); // Tï¿½m eklenen ï¿½rï¿½nlerin baï¿½arï¿½yla dï¿½ndï¿½rï¿½lmesi
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Could not create products' });
+    }
+};
+
+exports.searchProducts = async (req, res) => {
+    try {
+        const { key } = req.params; // URL'den arama anahtarÄ±nÄ± al
+        const products = await Product.searchByKey(key); // Model'den arama yap
+
+        if (products.length === 0) {
+            return res.status(404).json({ message: 'No products found' }); // EÄŸer sonuÃ§ yoksa mesaj dÃ¶ndÃ¼r
+        }
+
+        res.json(products); // EÅŸleÅŸen Ã¼rÃ¼nleri JSON olarak dÃ¶ndÃ¼r
+    } catch (error) {
+        console.error('Error searching products:', error.message);
+        res.status(500).json({ error: 'Internal server error' }); // Genel bir hata mesajÄ± dÃ¶ndÃ¼r
     }
 };

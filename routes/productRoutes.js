@@ -1,29 +1,31 @@
 // routes/productRoutes.js
 const express = require('express');
 const router = express.Router();
-const productController = require('../controllers/productController'); // Model yerine controller kullanýmý
+const productController = require('../controllers/productController'); // Model yerine controller kullanï¿½mï¿½
 
-// Tüm ürünleri listeleme
+// Tï¿½m ï¿½rï¿½nleri listeleme
 router.get('/', productController.getAllProducts);
 
-// Belirli bir ürünü ID’ye göre getirme
+// Belirli bir ï¿½rï¿½nï¿½ IDï¿½ye gï¿½re getirme
 router.get('/:id', productController.getProductById);
 
-// Ürün oluþturma
+// ï¿½rï¿½n oluï¿½turma
 router.post('/', productController.createProduct);
 
-// Ürün güncelleme
+// ï¿½rï¿½n gï¿½ncelleme
 router.put('/:id', productController.updateProduct);
 
-// Ürün silme
+// ï¿½rï¿½n silme
 router.delete('/:id', productController.deleteProduct);
 
-// Belirli bir kategorideki ürünleri listeleme
+// Belirli bir kategorideki ï¿½rï¿½nleri listeleme
 router.get('/category/:category', productController.getByCategory);
 
-// Ürüne týklamayý loglama ve popülerlik arttýrma
+// ï¿½rï¿½ne tï¿½klamayï¿½ loglama ve popï¿½lerlik arttï¿½rma
 router.post('/click/:id', productController.logClick);
 
-// Toplu ürün ekleme
+router.get('/search/:key', productController.searchProducts);
+
+// Toplu ï¿½rï¿½n ekleme
 router.post('/bulk', productController.createBulkProduct);
 module.exports = router;
