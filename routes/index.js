@@ -1,24 +1,25 @@
 const express = require('express');
 const router = express.Router();
-// Ana sayfa için route
+
+// Ana sayfa için yönlendirme
 router.get('/', (req, res) => {
-    const asciiArt = "                  _..__\r\n                .\' I   \'.\r\n                |.-\"\"\"-.|\r\n               _;.-\"\"\"-.;_\r\n           _.-\' _..-.-.._ \'-._\r\n          \';--.-(_o_I_o_)-.--;\'\r\n           `. | |  | |  | | .`\r\n             `-\\|  | |  |\/-\'\r\n                |  | |  |\r\n                |  \\_\/  |\r\n             _.\'; ._._. ;\'._\r\n        _.-\'`; | \\  -  \/ | ;\'-.\r\n      .\' :  \/  |  |   |  |  \\  \'.\r\n     \/   : \/__ \\  \\___\/  \/ __\\ : `.\r\n    \/    |   \/  \'._\/_\\_.\'  \\   :   `\\\r\n   \/     .  `---;\"\"\"\"\"\'-----`  .     \\\r\n  \/      |      |()    ()      |      \\\r\n \/      \/|      |              |\\      \\\r\n\/      \/ |      |()    ()      | \\      \\\r\n|         |\r\n\\     \\   |][     |   |    ][ |   \/     \/\r\n \\     \\ ;=\"\"=====\'\"\"\"\'====\"\"==; \/     \/\r\n  |\/`\\  \\\/      |()    ()      \\\/  \/`\\|\r\n   |_\/.-\';      |              |`-.\\_|\r\n     \/   |      ;              :   \\\r\n     |__.|      |              |.__|\r\n         ;      |              | \r\n         |      :              ;\r\n         |      :              |\r\n         ;      |              |\r\n         ;      |              ;\r\n         |      :              |\r\n         |      |              ;\r\n         |      |              ;\r\n         \'-._   ;           _.-\'\r\n             `;\"--.....--\";`\r\n              |    | |    |\r\n              |    | |    |\r\n              |    | |    |\r\n              T----T T----T\r\n         _..._L____J L____J _..._\r\n       .` \"-. `%   | |    %` .-\" `.\r\n      \/      \\    .: :.     \/      \\\r\n      \'-..___|_..=:` `-:=.._|___..-\'";
+    const asciiArt = `
+       deneme icin nas?l denedim belli degil
+    `;
     res.send(`
         <html>
         <head>
             <title>Team10 E-Ticaret</title>
         </head>
         <body style="font-family: monospace; text-align: center;">
-            <h1>Team10 E-Ticaret Hoþgeldiniz</h1>
+            <h1>Team10 E-Ticaret'e Ho?geldiniz</h1>
             <pre>${asciiArt}</pre>
         </body>
         </html>
     `);
 });
 
-
-
-// Diðer rotalar
+// Di?er rotalar
 const authRoutes = require('./authRoutes');
 const cartRoutes = require('./cartRoutes');
 const categoryRoutes = require('./categoryRoutes');
@@ -29,7 +30,7 @@ const userRoutes = require('./userRoutes');
 const wishlistRoutes = require('./wishlistRoutes');
 const paymentRoutes = require('./paymentRoutes');
 
-// Rota dosyalarýný baðlayýn
+// Rota dosyalar?n? ba?lama
 router.use('/auth', authRoutes);
 router.use('/carts', cartRoutes);
 router.use('/categories', categoryRoutes);
