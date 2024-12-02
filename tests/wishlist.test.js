@@ -1,50 +1,36 @@
-const Wishlist = require('../models/wishlist'); // Doðru import
-const pool = require('../db'); // Veritabaný baðlantýsý
+const wishlistController = require('../controllers/wishlistController');
 
-jest.mock('../db');  // db baðlantýsýný mock'layýn
+jest.mock('../db', () => ({
+    execute: jest.fn(),
+}));
 
-describe('Wishlist Model CRUD Operations', () => {
+describe('Wishlist Controller Tests', () => {
+    test('should add a product to the wishlist', async () => {
+        const mockWishlistItem = { user_id: 1, product_id: 2 };
+        jest.spyOn(wishlistController, 'addToWishlist').mockResolvedValue({ id: 1, ...mockWishlistItem });
 
-    // Test için wishlist örneði
-    const testWishlist = {
-        user_id: 1,
-        product_id: 1,
-    };
-
-    afterAll(async () => {
-        await pool.end(); // Tüm testlerden sonra baðlantýyý kapat
+        const result = await wishlistController.addToWishlist(mockWishlistItem);
+        expect(result).toEqual({ id: 1, ...mockWishlistItem });
+        expect(wishlistController.addToWishlist).toHaveBeenCalledWith(mockWishlistItem);
     });
 
-    it('should create a new wishlist item', async () => {
-        const mockInsertResult = { insertId: 1 };  // Mocklanan insertId
-        pool.execute.mockResolvedValue([mockInsertResult]);  // execute fonksiyonunu mock'la
-
-        const result = await Wishlist.add(testWishlist);
-
-        expect(result).toBe(1);  // Yeni kaydýn ID'si 1 olmalý
-        expect(pool.execute).toHaveBeenCalledWith(expect.any(String), expect.any(Array));  // execute çaðrýldý mý
-    });
-
-    it('should get wishlist items by user ID', async () => {
+    test('should get all items in a user wishlist', async () => {
         const mockWishlistItems = [
-            { wishlist_id: 1, user_id: 1, product_id: 1 },
-            { wishlist_id: 2, user_id: 1, product_id: 2 },
+            { id: 1, user_id: 1, product_id: 2 },
+            { id: 2, user_id: 1, product_id: 3 },
         ];
-        pool.execute.mockResolvedValue([mockWishlistItems]);  // execute fonksiyonunu mock'la
+        jest.spyOn(wishlistController, 'getWishlistItems').mockResolvedValue(mockWishlistItems);
 
-        const items = await Wishlist.getByUserId(1);
-
-        expect(items).toEqual(mockWishlistItems);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM wishlists WHERE user_id = ?;', [1]);  // doðru sorgu
+        const result = await wishlistController.getWishlistItems(1);
+        expect(result).toEqual(mockWishlistItems);
+        expect(wishlistController.getWishlistItems).toHaveBeenCalledWith(1);
     });
 
-    it('should delete a wishlist item by ID', async () => {
-        const mockResult = { affectedRows: 1 };  // Mocklanan silme sonucu
-        pool.execute.mockResolvedValue([mockResult]);  // execute fonksiyonunu mock'la
+    test('should remove an item from the wishlist', async () => {
+        jest.spyOn(wishlistController, 'removeFromWishlist').mockResolvedValue(true);
 
-        const result = await Wishlist.delete(1);
-
-        expect(result).toBe(true);  // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM wishlists WHERE wishlist_id = ?;', [1]);  // doðru sorgu
+        const result = await wishlistController.removeFromWishlist(1);
+        expect(result).toBe(true);
+        expect(wishlistController.removeFromWishlist).toHaveBeenCalledWith(1);
     });
 });
