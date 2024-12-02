@@ -84,3 +84,15 @@ exports.getOrderByUserID = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+exports.getPurchasedProducts = async (req, res) => {
+    const userId = req.params.id; // Kullanýcý ID'sini parametreden al
+    try {
+        const productIds = await Order.getPurchasedProductIds(userId); // Modeldeki fonksiyonu çaðýr
+        res.json(productIds); // JSON formatýnda geri döndür
+    } catch (error) {
+        console.error("Error fetching purchased products:", error.message);
+        res.status(500).json({ error: "Could not fetch purchased product IDs" }); // Hata mesajý döndür
+    }
+};
+

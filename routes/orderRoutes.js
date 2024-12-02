@@ -21,4 +21,7 @@ router.delete('/:id', orderController.deleteOrder);
 // To get order history
 router.get('/user_id/:id', orderController.getOrderByUserID);
 
+router.get('/user-products/:id', orderController.getPurchasedProducts);
+
+
 module.exports = router;
