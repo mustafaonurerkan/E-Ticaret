@@ -138,16 +138,21 @@ const Order = {
         return result.affectedRows > 0;
     },
 
-    // Order history by name
-    getByUsername: async (username) => {
+    // Order history by user_id
+    getByUserID: async (user_id) => {
         const query = `
             SELECT o.order_id, o.total_price, o.status, o.created_at, o.delivery_address
             FROM orders o
-            JOIN users u ON o.user_id = u.user_id
-            WHERE u.name = ?;
+            WHERE o.user_id = ?;
         `;
-        const [rows] = await pool.execute(query, [username]);
-        return rows;
+        try {
+            const [rows] = await pool.execute(query, [user_id]); // Buradaki parametrenin türünü kontrol edin
+            console.log('Query result:', rows); // Sorgudan dönen sonucu loglayýn
+            return rows;
+        } catch (error) {
+            console.error('Database error:', error.message); // Veritabaný hatasýný kontrol edin
+            throw error; // Hatayý yukarý fýrlatýn
+        }
     },
 };
 

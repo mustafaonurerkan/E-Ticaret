@@ -19,6 +19,6 @@ router.put('/:id', orderController.updateOrderStatus);
 router.delete('/:id', orderController.deleteOrder);
 
 // To get order history
-router.get('/username/:username', orderController.getOrderByUsername);
+router.get('/user_id/:id', orderController.getOrderByUserID);
 
 module.exports = router;

@@ -69,11 +69,11 @@ exports.deleteOrder = async (req, res) => {
     }
 };
 
-exports.getOrderByUsername = async (req, res) => {
-    const { username } = req.params; 
+exports.getOrderByUserID = async (req, res) => {
+    const { id } = req.params; 
 
     try {
-        const orders = await Order.getByUsername(username);
+        const orders = await Order.getByUserID(id);
         if (orders.length === 0) {
             return res.status(404).json({ message: 'No orders found for this username' });
         }
