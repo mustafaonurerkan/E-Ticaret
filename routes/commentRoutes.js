@@ -10,7 +10,7 @@ router.get('/', commentController.getAllComments);
 router.post('/create', commentController.createComment);
 
 // Bir ürün için yorumlarý listeleme
-router.get('/product/:productId', commentController.getCommentsByProductId);
+router.get('/product/:id', commentController.getCommentsByProductId);
 
 // Belirli bir yorumu silme
 router.delete('/:id', commentController.deleteComment);
