@@ -11,6 +11,12 @@ const pool = mysql.createPool({
     charset: 'utf8mb4'
 });
 
-console.log('Connected to MySQL Database');
+try {
+    console.log('Connected to MySQL Database');
+}
+catch (error){
+    console.error('No connection to database', error);
+}
+
 
 module.exports = pool;
