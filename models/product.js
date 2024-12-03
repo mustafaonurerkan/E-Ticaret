@@ -96,11 +96,11 @@ const Product = {
         const query = `
             SELECT product_id, name
             FROM products
-            WHERE name LIKE ?
+            WHERE name LIKE ? OR description LIKE ?
             LIMIT 5; -- Sadece ilk 5 ürünü getir
         `;
         const searchKey = `%${key}%`; // Anahtar kelimeyi içeren ürünleri arar
-        const [rows] = await pool.execute(query, [searchKey]);
+        const [rows] = await pool.execute(query, [searchKey, searchKey]);
         return rows;
     },
     
