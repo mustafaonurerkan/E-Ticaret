@@ -7,8 +7,8 @@ const nodemailer = require('nodemailer');
 
 exports.createOrder = async (req, res) => {
     try {
-        const order = req.body; // Gelen sipariþ verileri
-        const orderId = await Order.create(order); // Yeni sipariþ oluþtur
+        const order = req.body; // Gelen sipariï¿½ verileri
+        const orderId = await Order.create(order); // Yeni sipariï¿½ oluï¿½tur
 
         res.status(201).json({ orderId });
     } catch (error) {
@@ -28,7 +28,7 @@ exports.getAllOrders = async (req, res) => {
 
 exports.getOrderById = async (req, res) => {
     try {
-        const id = req.params.id; // URL'deki ID'yi alýn
+        const id = req.params.id; // URL'deki ID'yi alï¿½n
         if (!id) {
             return res.status(400).json({ error: 'Order ID is required' });
         }
@@ -46,7 +46,7 @@ exports.getOrderById = async (req, res) => {
 };
 
 
-// Sipariþ durumunu güncelleme
+// Sipariï¿½ durumunu gï¿½ncelleme
 exports.updateOrderStatus = async (req, res) => {
     const { status } = req.body;
     try {
@@ -61,7 +61,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
-// Sipariþi silme
+// Sipariï¿½i silme
 exports.deleteOrder = async (req, res) => {
     try {
         const success = await Order.delete(req.params.id);
@@ -92,13 +92,13 @@ exports.getOrderByUserID = async (req, res) => {
 };
 
 exports.getPurchasedProducts = async (req, res) => {
-    const userId = req.params.id; // Kullanýcý ID'sini parametreden al
+    const userId = req.params.id; // Kullanï¿½cï¿½ ID'sini parametreden al
     try {
-        const productIds = await Order.getPurchasedProductIds(userId); // Modeldeki fonksiyonu çaðýr
-        res.json(productIds); // JSON formatýnda geri döndür
+        const productIds = await Order.getPurchasedProductIds(userId); // Modeldeki fonksiyonu ï¿½aï¿½ï¿½r
+        res.json(productIds); // JSON formatï¿½nda geri dï¿½ndï¿½r
     } catch (error) {
         console.error("Error fetching purchased products:", error.message);
-        res.status(500).json({ error: "Could not fetch purchased product IDs" }); // Hata mesajý döndür
+        res.status(500).json({ error: "Could not fetch purchased product IDs" }); // Hata mesajï¿½ dï¿½ndï¿½r
     }
 };
 
@@ -108,17 +108,17 @@ exports.sendOrderReceipt = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Sipariþ bilgilerini al
+        // Sipariï¿½ bilgilerini al
         const order = await Order.getById(id);
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Kullanýcýnýn e-posta adresini al
+        // Kullanï¿½cï¿½nï¿½n e-posta adresini al
         const email = await Order.getUserEmailByOrderId(id);
         const username = await Order.getUsernamebyOrderId(id);
 
-        // PDF oluþtur
+        // PDF oluï¿½tur
         const pdfPath = `./order_${id}_receipt.pdf`;
         const doc = new PDFDocument();
         
@@ -145,12 +145,12 @@ exports.sendOrderReceipt = async (req, res) => {
 
         doc.end();
 
-        // E-posta gönderimi
+        // E-posta gï¿½nderimi
         const transporter = nodemailer.createTransport({
-            service: 'Gmail', // Örnek olarak Gmail kullanýlýyor
+            service: 'Gmail', // ï¿½rnek olarak Gmail kullanï¿½lï¿½yor
             auth: {
                 user: 'team10proje@gmail.com', // E-posta adresi
-                pass: 'jbyx gfrb afdt pije'  // E-posta þifresi veya uygulama þifresi
+                pass: 'jbyx gfrb afdt pije'  // E-posta ï¿½ifresi veya uygulama ï¿½ifresi
             }
         });
 
@@ -169,7 +169,7 @@ exports.sendOrderReceipt = async (req, res) => {
 
         await transporter.sendMail(mailOptions);
 
-        // PDF dosyasýný sil
+        // PDF dosyasï¿½nï¿½ sil
         fs.unlinkSync(pdfPath);
 
         res.json({ message: 'Order receipt sent successfully' });
