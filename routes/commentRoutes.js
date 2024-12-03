@@ -10,12 +10,22 @@ router.get('/', commentController.getAllComments);
 router.post('/create', commentController.createComment);
 
 // Bir ürün için yorumlarý listeleme
-router.get('/product/:productId', commentController.getCommentsByProductId);
+router.get('/product/:id', commentController.getCommentsByProductId);
 
 // Belirli bir yorumu silme
 router.delete('/:id', commentController.deleteComment);
 
 // onaysýzlarý getir
 router.get('/unapproved', commentController.getUnapproved);
+
+// Yorum onaylama rotasý
+router.post('/approve', commentController.approveComment);
+/*
+onaylama için post ve body þu þekilde olmalý:
+{
+    "user_id": 13, //onaylamayý gönderen user
+    "comment_id": 5 //onaylanacak comment
+}
+*/
 
 module.exports = router;

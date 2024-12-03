@@ -60,5 +60,27 @@ exports.getUnapproved = async (req, res) => {
     }
 };
 
+exports.approveComment = async (req, res) => {
+    const { user_id, comment_id } = req.body;
+
+    try {
+        // Kullanýcýnýn rolünü kontrol et
+        const role = await Comment.getUserRole(user_id);
+        if (role !== 'product_manager') {
+            return res.status(403).json({ error: 'You do not have permission to approve comments' });
+        }
+
+        // Yorumu onayla
+        const success = await Comment.approve(comment_id);
+        if (!success) {
+            return res.status(404).json({ error: 'Comment not found or could not be approved' });
+        }
+
+        res.status(200).json({ message: 'Comment approved successfully' });
+    } catch (error) {
+        console.error('Error approving comment:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 

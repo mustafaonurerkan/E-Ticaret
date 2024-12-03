@@ -60,7 +60,25 @@ const Comment = {
         `;
         const [rows] = await pool.execute(query, [userId, productId]);
         return rows[0].order_count > 0;
-    }
+    },
+
+    approve: async (commentId) => {
+        const query = `
+            UPDATE comments
+            SET approved = TRUE
+            WHERE comment_id = ?;
+        `;
+        const [result] = await pool.execute(query, [commentId]);
+        return result.affectedRows > 0;
+    },
+
+    getUserRole: async (userId) => {
+        const query = `
+            SELECT role FROM users WHERE user_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [userId]);
+        return rows[0]?.role || null;
+    },
 };
 
 module.exports = Comment;

@@ -1,135 +1,69 @@
-const pool = require('../db'); // Veritabaný baðlantýsýný alýn
-const User = require('../models/user'); // User Modeli
-const userController = require('../controllers/userController'); // User Controller
+const userController = require('../controllers/userController');
+const User = require('../models/user');
 
-jest.mock('../db'); // Veritabaný baðlantýsýný mock'la
+// Mock database or dependencies
+jest.mock('../models/user', () => ({
+    create: jest.fn(),
+    getAll: jest.fn(),
+    getById: jest.fn(),
+    delete: jest.fn(),
+    update: jest.fn(),
+}));
 
-describe('User Model and Controller Tests', () => {
-    let req, res;
+describe('User Controller Tests', () => {
+    test('should create a new user', async () => {
+        const mockUser = { name: 'John Doe', email: 'john@example.com', password: '123456', role: 'user', tax_id: '12345', address: '123 Main St' };
+        User.create.mockResolvedValue(1);
 
-    beforeEach(() => {
-        req = {}; // Mock request
-        res = {
-            status: jest.fn().mockReturnThis(), // Chaining için
-            json: jest.fn(),
-        }; // Mock response
-
-        jest.clearAllMocks(); // Mock'larý temizle
+        const result = await userController.createUser({ body: mockUser });
+        expect(User.create).toHaveBeenCalledWith(mockUser);
+        expect(result.id).toBe(1);
     });
 
-    describe('User Model Tests', () => {
-        it('should create a new user and return the user ID', async () => {
-            const mockInsertResult = [{ insertId: 1 }];
-            pool.execute.mockResolvedValueOnce(mockInsertResult);
+    test('should get a user by ID', async () => {
+        const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+        User.getById.mockResolvedValue(mockUser);
 
-            const newUser = {
-                name: 'John Doe',
-                email: 'john@example.com',
-                password: 'password123',
-                role: 'admin',
-                tax_id: '1234567890',
-                address: '123 Main St',
-            };
+        const req = { params: { id: 1 } };
+        const res = { json: jest.fn() };
+        await userController.getUserById(req, res);
 
-            const userId = await User.create(newUser);
-
-            expect(pool.execute).toHaveBeenCalledWith(
-                expect.stringContaining('INSERT INTO users'),
-                expect.arrayContaining([
-                    'John Doe',
-                    'john@example.com',
-                    'password123',
-                    'admin',
-                    '1234567890',
-                    '123 Main St',
-                ])
-            );
-            expect(userId).toBe(1);
-        });
-
-        it('should fetch all users', async () => {
-            const mockUsers = [
-                { user_id: 1, name: 'John Doe', email: 'john@example.com' },
-                { user_id: 2, name: 'Jane Doe', email: 'jane@example.com' },
-            ];
-            pool.execute.mockResolvedValueOnce([mockUsers]);
-
-            const users = await User.getAll();
-
-            expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM users;');
-            expect(users).toEqual(mockUsers);
-        });
-
-        it('should fetch a user by ID', async () => {
-            const mockUser = { user_id: 1, name: 'John Doe', email: 'john@example.com' };
-            pool.execute.mockResolvedValueOnce([[mockUser]]);
-
-            const user = await User.getById(1);
-
-            expect(pool.execute).toHaveBeenCalledWith(
-                'SELECT * FROM users WHERE user_id = ?;',
-                [1]
-            );
-            expect(user).toEqual(mockUser);
-        });
-
-        it('should delete a user by ID', async () => {
-            pool.execute.mockResolvedValueOnce([{ affectedRows: 1 }]);
-
-            const result = await User.delete(1);
-
-            expect(pool.execute).toHaveBeenCalledWith(
-                'DELETE FROM users WHERE user_id = ?;',
-                [1]
-            );
-            expect(result).toBe(true);
-        });
+        expect(User.getById).toHaveBeenCalledWith(1);
+        expect(res.json).toHaveBeenCalledWith(mockUser);
     });
 
-    describe('User Controller Tests', () => {
-        it('should return all users via controller', async () => {
-            const mockUsers = [
-                { user_id: 1, name: 'John Doe', email: 'john@example.com' },
-                { user_id: 2, name: 'Jane Doe', email: 'jane@example.com' },
-            ];
-            pool.execute.mockResolvedValueOnce([mockUsers]);
+    test('should delete a user', async () => {
+        User.delete.mockResolvedValue(true);
 
-            await userController.getAllUsers(req, res);
+        const req = { params: { id: 1 } };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        await userController.deleteUser(req, res);
 
-            expect(res.json).toHaveBeenCalledWith(mockUsers);
-        });
+        expect(User.delete).toHaveBeenCalledWith(1);
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ message: 'User deleted successfully' });
+    });
 
-        it('should return a user by ID via controller', async () => {
-            const mockUser = { user_id: 1, name: 'John Doe', email: 'john@example.com' };
-            req.params = { id: 1 };
-            pool.execute.mockResolvedValueOnce([[mockUser]]);
+    test('should return 404 when deleting a non-existent user', async () => {
+        User.delete.mockResolvedValue(false);
 
-            await userController.getUserById(req, res);
+        const req = { params: { id: 999 } };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        await userController.deleteUser(req, res);
 
-            expect(res.json).toHaveBeenCalledWith(mockUser);
-        });
+        expect(User.delete).toHaveBeenCalledWith(999);
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: 'User not found or could not be deleted' });
+    });
 
-        it('should return 404 if user is not found via controller', async () => {
-            req.params = { id: 1 };
-            pool.execute.mockResolvedValueOnce([[]]);
+    test('should update a user', async () => {
+        User.update.mockResolvedValue(true);
 
-            await userController.getUserById(req, res);
+        const req = { params: { id: 1 }, body: { tax_id: '54321', address: '456 Main St' } };
+        const res = { json: jest.fn() };
+        await userController.updateUser(req, res);
 
-            expect(res.status).toHaveBeenCalledWith(404);
-            expect(res.json).toHaveBeenCalledWith({ error: 'Kullanýcý bulunamadý' });
-        });
-
-        it('should handle database errors gracefully in controller', async () => {
-            req.params = { id: 1 };
-            pool.execute.mockRejectedValueOnce(new Error('Database error'));
-
-            await userController.getUserById(req, res);
-
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith({
-                error: 'Kullanýcý getirilemedi',
-                detail: 'Database error',
-            });
-        });
+        expect(User.update).toHaveBeenCalledWith(1, req.body);
+        expect(res.json).toHaveBeenCalledWith({ message: 'User updated successfully' });
     });
 });

@@ -175,6 +175,19 @@ const Order = {
         return rows[0].email; // E-posta adresini döndür
     },
 
+    getPurchasedProductIds: async (userId) => {
+        const query = `
+        SELECT DISTINCT p.product_id
+        FROM orders o
+        JOIN order_items oi ON o.order_id = oi.order_id
+        JOIN products p ON oi.product_id = p.product_id
+        WHERE o.user_id = ?;
+    `;
+        const [rows] = await pool.execute(query, [userId]);
+        return rows.map(row => row.product_id); // Sadece product_id'leri döndür
+    },
+
+
     getUsernamebyOrderId: async (order_id) => {
         const query = `
             SELECT u.name
