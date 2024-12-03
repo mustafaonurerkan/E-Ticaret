@@ -21,4 +21,7 @@ router.delete('/:id', orderController.deleteOrder);
 // To get order history
 router.get('/user_id/:id', orderController.getOrderByUserID);
 
+// To send order receipt PDF to mail
+router.post('/:id/sendPDF', orderController.sendOrderReceipt);
+
 module.exports = router;

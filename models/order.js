@@ -1,4 +1,5 @@
 const pool = require('../db');
+const fs = require('fs');
 
 const Order = {
 
@@ -154,6 +155,44 @@ const Order = {
             throw error; // Hatayý yukarý fýrlatýn
         }
     },
+
+
+    getUserEmailByOrderId: async (order_id) => {
+        const query = `
+            SELECT u.email
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            WHERE o.order_id = ?;
+        `;
+
+        const [rows] = await pool.execute(query, [order_id]);
+        console.error('order_id bulundu: ',order_id);
+
+        if (rows.length === 0) {
+            throw new Error(`No email found for order_id: ${order_id}`);
+        }
+
+        return rows[0].email; // E-posta adresini döndür
+    },
+
+    getUsernamebyOrderId: async (order_id) => {
+        const query = `
+            SELECT u.name
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            WHERE o.order_id = ?;
+        `;
+
+        const [rows] = await pool.execute(query, [order_id]);
+        console.error('order_id bulundu: ', order_id);
+
+        if (rows.length === 0) {
+            throw new Error(`No email found for order_id: ${order_id}`);
+        }
+
+        return rows[0].name; // E-posta adresini döndür
+    }
+
 };
 
 module.exports = Order;
