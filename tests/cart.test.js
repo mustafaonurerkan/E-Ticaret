@@ -5,32 +5,75 @@ jest.mock('../db', () => ({
 }));
 
 describe('Cart Controller Tests', () => {
-    test('should add a product to the cart', async () => {
-        const mockCartItem = { user_id: 1, product_id: 2, quantity: 1 };
-        jest.spyOn(cartController, 'addToCart').mockResolvedValue({ id: 1, ...mockCartItem });
+    let mockReq, mockRes;
 
-        const result = await cartController.addToCart(mockCartItem);
-        expect(result).toEqual({ id: 1, ...mockCartItem });
-        expect(cartController.addToCart).toHaveBeenCalledWith(mockCartItem);
+    beforeEach(() => {
+        mockReq = {};
+        mockRes = {
+            json: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+        };
+    });
+
+    test('should add a product to the cart', async () => {
+        mockReq.body = { userId: 1, productId: 2, quantity: 1 };
+        jest.spyOn(cartController, 'addToCart').mockImplementation(async (req, res) => {
+            res.json({ message: 'Product added/updated in cart' });
+        });
+
+        await cartController.addToCart(mockReq, mockRes);
+
+        expect(mockRes.json).toHaveBeenCalledWith({ message: 'Product added/updated in cart' });
     });
 
     test('should get all items in a user cart', async () => {
+        mockReq.params = { userId: 1 };
         const mockCartItems = [
-            { id: 1, user_id: 1, product_id: 2, quantity: 1 },
-            { id: 2, user_id: 1, product_id: 3, quantity: 2 },
+            { cartId: 1, userId: 1, productId: 2, quantity: 1 },
+            { cartId: 2, userId: 1, productId: 3, quantity: 2 },
         ];
-        jest.spyOn(cartController, 'getCartItems').mockResolvedValue(mockCartItems);
+        jest.spyOn(cartController, 'getCart').mockImplementation(async (req, res) => {
+            res.json(mockCartItems);
+        });
 
-        const result = await cartController.getCartItems(1);
-        expect(result).toEqual(mockCartItems);
-        expect(cartController.getCartItems).toHaveBeenCalledWith(1);
+        await cartController.getCart(mockReq, mockRes);
+
+        expect(mockRes.json).toHaveBeenCalledWith(mockCartItems);
     });
 
     test('should remove an item from the cart', async () => {
-        jest.spyOn(cartController, 'removeFromCart').mockResolvedValue(true);
+        mockReq.body = { userId: 1, productId: 2 };
+        jest.spyOn(cartController, 'removeFromCart').mockImplementation(async (req, res) => {
+            res.json({ message: 'Product removed from cart' });
+        });
 
-        const result = await cartController.removeFromCart(1);
-        expect(result).toBe(true);
-        expect(cartController.removeFromCart).toHaveBeenCalledWith(1);
+        await cartController.removeFromCart(mockReq, mockRes);
+
+        expect(mockRes.json).toHaveBeenCalledWith({ message: 'Product removed from cart' });
+    });
+
+    test('should clear the cart for a user', async () => {
+        mockReq.body = { userId: 1 };
+        jest.spyOn(cartController, 'clearCart').mockImplementation(async (req, res) => {
+            res.json({ message: 'Cart cleared successfully' });
+        });
+
+        await cartController.clearCart(mockReq, mockRes);
+
+        expect(mockRes.json).toHaveBeenCalledWith({ message: 'Cart cleared successfully' });
+    });
+
+    test('should retrieve all carts', async () => {
+        const mockCarts = [
+            { cartId: 1, userId: 1, productId: 2, quantity: 1 },
+            { cartId: 2, userId: 2, productId: 3, quantity: 2 },
+        ];
+        jest.spyOn(cartController, 'getAllCarts').mockImplementation(async (req, res) => {
+            res.json(mockCarts);
+        });
+
+        await cartController.getAllCarts(mockReq, mockRes);
+
+        expect(mockRes.json).toHaveBeenCalledWith(mockCarts);
     });
 });

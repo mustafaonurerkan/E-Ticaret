@@ -1,34 +1,69 @@
 const userController = require('../controllers/userController');
+const User = require('../models/user');
 
 // Mock database or dependencies
-jest.mock('../db', () => ({
-    execute: jest.fn(),
+jest.mock('../models/user', () => ({
+    create: jest.fn(),
+    getAll: jest.fn(),
+    getById: jest.fn(),
+    delete: jest.fn(),
+    update: jest.fn(),
 }));
 
 describe('User Controller Tests', () => {
     test('should create a new user', async () => {
-        const mockUser = { name: 'John Doe', email: 'john@example.com' };
-        jest.spyOn(userController, 'createUser').mockResolvedValue({ id: 1, ...mockUser });
+        const mockUser = { name: 'John Doe', email: 'john@example.com', password: '123456', role: 'user', tax_id: '12345', address: '123 Main St' };
+        User.create.mockResolvedValue(1);
 
-        const result = await userController.createUser(mockUser);
-        expect(result).toEqual({ id: 1, ...mockUser });
-        expect(userController.createUser).toHaveBeenCalledWith(mockUser);
+        const result = await userController.createUser({ body: mockUser });
+        expect(User.create).toHaveBeenCalledWith(mockUser);
+        expect(result.id).toBe(1);
     });
 
     test('should get a user by ID', async () => {
         const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
-        jest.spyOn(userController, 'getUserById').mockResolvedValue(mockUser);
+        User.getById.mockResolvedValue(mockUser);
 
-        const result = await userController.getUserById(1);
-        expect(result).toEqual(mockUser);
-        expect(userController.getUserById).toHaveBeenCalledWith(1);
+        const req = { params: { id: 1 } };
+        const res = { json: jest.fn() };
+        await userController.getUserById(req, res);
+
+        expect(User.getById).toHaveBeenCalledWith(1);
+        expect(res.json).toHaveBeenCalledWith(mockUser);
     });
 
     test('should delete a user', async () => {
-        jest.spyOn(userController, 'deleteUser').mockResolvedValue(true);
+        User.delete.mockResolvedValue(true);
 
-        const result = await userController.deleteUser(1);
-        expect(result).toBe(true);
-        expect(userController.deleteUser).toHaveBeenCalledWith(1);
+        const req = { params: { id: 1 } };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        await userController.deleteUser(req, res);
+
+        expect(User.delete).toHaveBeenCalledWith(1);
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ message: 'User deleted successfully' });
+    });
+
+    test('should return 404 when deleting a non-existent user', async () => {
+        User.delete.mockResolvedValue(false);
+
+        const req = { params: { id: 999 } };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        await userController.deleteUser(req, res);
+
+        expect(User.delete).toHaveBeenCalledWith(999);
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: 'User not found or could not be deleted' });
+    });
+
+    test('should update a user', async () => {
+        User.update.mockResolvedValue(true);
+
+        const req = { params: { id: 1 }, body: { tax_id: '54321', address: '456 Main St' } };
+        const res = { json: jest.fn() };
+        await userController.updateUser(req, res);
+
+        expect(User.update).toHaveBeenCalledWith(1, req.body);
+        expect(res.json).toHaveBeenCalledWith({ message: 'User updated successfully' });
     });
 });
