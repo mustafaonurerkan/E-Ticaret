@@ -103,6 +103,21 @@ const Product = {
         const [rows] = await pool.execute(query, [searchKey, searchKey]);
         return rows;
     },
+
+    updateStock: async (product_id, quantity_in_stock) => {
+        const query = `
+            UPDATE products
+            SET quantity_in_stock = ?
+            WHERE product_id = ?;
+        `;
+        try {
+            const [result] = await pool.execute(query, [quantity_in_stock, product_id]);
+            return result.affectedRows > 0; // Başarılı güncelleme için true döner
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    },
+
     
     
 

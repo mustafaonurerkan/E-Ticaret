@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Ana sayfa için yönlendirme
+// Ana sayfa iï¿½in yï¿½nlendirme
 router.get('/', (req, res) => {
     res.send(`
         <html lang="en">
@@ -291,6 +291,7 @@ const productRoutes = require('./productRoutes');
 const userRoutes = require('./userRoutes');
 const wishlistRoutes = require('./wishlistRoutes');
 const paymentRoutes = require('./paymentRoutes');
+const productManagerRoutes = require('./productManagerRoutes');
 
 // Rota dosyalar?n? ba?lama
 router.use('/auth', authRoutes);
@@ -302,5 +303,6 @@ router.use('/products', productRoutes);
 router.use('/users', userRoutes);
 router.use('/wishlists', wishlistRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/product-manager', productManagerRoutes);
 
 module.exports = router;
