@@ -1,79 +1,175 @@
 const cartController = require('../controllers/cartController');
+const cartModel = require('../models/cart');
 
-jest.mock('../db', () => ({
-    execute: jest.fn(),
+jest.mock('../models/cart', () => ({
+    add: jest.fn(),
+    getCartByUserId: jest.fn(),
+    delete: jest.fn(),
+    clear: jest.fn(),
+    updateQuantity: jest.fn(),
 }));
 
 describe('Cart Controller Tests', () => {
-    let mockReq, mockRes;
-
-    beforeEach(() => {
-        mockReq = {};
-        mockRes = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis(),
-        };
-    });
-
     test('should add a product to the cart', async () => {
-        mockReq.body = { userId: 1, productId: 2, quantity: 1 };
-        jest.spyOn(cartController, 'addToCart').mockImplementation(async (req, res) => {
-            res.json({ message: 'Product added/updated in cart' });
-        });
+        cartModel.add.mockResolvedValue(true);
 
-        await cartController.addToCart(mockReq, mockRes);
+        const mockRequest = {
+            body: { user_id: 1, product_id: 2, quantity: 1 },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
 
-        expect(mockRes.json).toHaveBeenCalledWith({ message: 'Product added/updated in cart' });
+        await cartController.addToCart(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(201);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Product added/updated in cart' });
     });
 
     test('should get all items in a user cart', async () => {
-        mockReq.params = { userId: 1 };
         const mockCartItems = [
-            { cartId: 1, userId: 1, productId: 2, quantity: 1 },
-            { cartId: 2, userId: 1, productId: 3, quantity: 2 },
+            { id: 1, user_id: 1, product_id: 2, quantity: 1 },
+            { id: 2, user_id: 1, product_id: 3, quantity: 2 },
         ];
-        jest.spyOn(cartController, 'getCart').mockImplementation(async (req, res) => {
-            res.json(mockCartItems);
-        });
+        cartModel.getCartByUserId.mockResolvedValue(mockCartItems);
 
-        await cartController.getCart(mockReq, mockRes);
+        const mockRequest = { params: { userId: 1 } };
+        const mockResponse = {
+            json: jest.fn(),
+        };
 
-        expect(mockRes.json).toHaveBeenCalledWith(mockCartItems);
+        await cartController.getCart(mockRequest, mockResponse);
+
+        expect(mockResponse.json).toHaveBeenCalledWith(mockCartItems);
     });
 
     test('should remove an item from the cart', async () => {
-        mockReq.body = { userId: 1, productId: 2 };
-        jest.spyOn(cartController, 'removeFromCart').mockImplementation(async (req, res) => {
-            res.json({ message: 'Product removed from cart' });
-        });
+        cartModel.delete.mockResolvedValue(true);
 
-        await cartController.removeFromCart(mockReq, mockRes);
+        const mockRequest = {
+            params: { id: 1 },
+        };
+        const mockResponse = {
+            json: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+        };
 
-        expect(mockRes.json).toHaveBeenCalledWith({ message: 'Product removed from cart' });
+        await cartController.removeFromCart(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Item removed from cart' });
     });
 
     test('should clear the cart for a user', async () => {
-        mockReq.body = { userId: 1 };
-        jest.spyOn(cartController, 'clearCart').mockImplementation(async (req, res) => {
-            res.json({ message: 'Cart cleared successfully' });
-        });
+        cartModel.clear.mockResolvedValue(true);
 
-        await cartController.clearCart(mockReq, mockRes);
+        const mockRequest = { params: { userId: 1 } };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
 
-        expect(mockRes.json).toHaveBeenCalledWith({ message: 'Cart cleared successfully' });
+        await cartController.clearCart(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Cart cleared successfully' });
     });
 
-    test('should retrieve all carts', async () => {
-        const mockCarts = [
-            { cartId: 1, userId: 1, productId: 2, quantity: 1 },
-            { cartId: 2, userId: 2, productId: 3, quantity: 2 },
+    test('should update quantity of an item in the cart', async () => {
+        cartModel.updateQuantity.mockResolvedValue(true);
+
+        const mockRequest = {
+            params: { id: 1 },
+            body: { quantity: 5 },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await cartController.updateQuantity(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Quantity updated successfully' });
+    });
+
+    // Yeni Eklenen Testler
+    test('should handle adding product to cart with invalid data', async () => {
+        const mockRequest = {
+            body: { user_id: null, product_id: null, quantity: null },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await cartController.addToCart(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid data' });
+    });
+
+    test('should return empty array for empty cart', async () => {
+        cartModel.getCartByUserId.mockResolvedValue([]);
+
+        const mockRequest = { params: { userId: 1 } };
+        const mockResponse = {
+            json: jest.fn(),
+        };
+
+        await cartController.getCart(mockRequest, mockResponse);
+
+        expect(mockResponse.json).toHaveBeenCalledWith([]);
+    });
+
+    test('should return 404 for non-existent cart item', async () => {
+        cartModel.delete.mockResolvedValue(false);
+
+        const mockRequest = { params: { id: 999 } };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await cartController.removeFromCart(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(404);
+        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Item not found' });
+    });
+
+    test('should validate quantity during update', async () => {
+        cartModel.updateQuantity.mockResolvedValue(false);
+
+        const mockRequest = {
+            params: { id: 1 },
+            body: { quantity: -5 },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await cartController.updateQuantity(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid quantity' });
+    });
+
+    test('should retrieve all cart items for admin', async () => {
+        const mockCartItems = [
+            { id: 1, user_id: 1, product_id: 2, quantity: 1 },
+            { id: 2, user_id: 2, product_id: 3, quantity: 2 },
         ];
-        jest.spyOn(cartController, 'getAllCarts').mockImplementation(async (req, res) => {
-            res.json(mockCarts);
-        });
+        cartModel.getAll.mockResolvedValue(mockCartItems);
 
-        await cartController.getAllCarts(mockReq, mockRes);
+        const mockRequest = {};
+        const mockResponse = {
+            json: jest.fn(),
+        };
 
-        expect(mockRes.json).toHaveBeenCalledWith(mockCarts);
+        await cartController.getAllCarts(mockRequest, mockResponse);
+
+        expect(mockResponse.json).toHaveBeenCalledWith(mockCartItems);
     });
 });
