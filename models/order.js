@@ -20,11 +20,7 @@ const Order = {
             const [orderResult] = await connection.execute(orderQuery, orderValues);
             const orderId = orderResult.insertId;
 
-<<<<<<< HEAD
-            // urun icin stok azaltma
-=======
-            // Sipari?teki her �r�n i�in stok azaltma i?lemi
->>>>>>> 1252389baa2af52f95a1d63dadbe578edf068890
+
             for (let item of order.items) {
                 const productQuery = `
                     UPDATE products 
@@ -57,11 +53,7 @@ const Order = {
         }
     },
 
-<<<<<<< HEAD
-    // all order listing
-=======
-    // T�m sipari?leri listeleme
->>>>>>> 1252389baa2af52f95a1d63dadbe578edf068890
+
     getAll: async () => {
         const query = `
         SELECT 

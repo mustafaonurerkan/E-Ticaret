@@ -1,10 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-<<<<<<< HEAD
-=======
-// Ana sayfa i�in y�nlendirme
->>>>>>> 1252389baa2af52f95a1d63dadbe578edf068890
+
 router.get('/', (req, res) => {
     res.send(`
         <html lang="en">
