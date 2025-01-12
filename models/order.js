@@ -20,7 +20,7 @@ const Order = {
             const [orderResult] = await connection.execute(orderQuery, orderValues);
             const orderId = orderResult.insertId;
 
-            // Sipari?teki her ürün için stok azaltma i?lemi
+            // Sipari?teki her ï¿½rï¿½n iï¿½in stok azaltma i?lemi
             for (let item of order.items) {
                 const productQuery = `
                     UPDATE products 
@@ -31,7 +31,7 @@ const Order = {
                 const [updateResult] = await connection.execute(productQuery, productValues);
 
                 if (updateResult.affectedRows === 0) {
-                    throw new Error(`Ürün stok yetersiz: ${item.product_id}`);
+                    throw new Error(`ï¿½rï¿½n stok yetersiz: ${item.product_id}`);
                 }
 
                 const orderItemQuery = `
@@ -53,7 +53,7 @@ const Order = {
         }
     },
 
-    // Tüm sipari?leri listeleme
+    // Tï¿½m sipari?leri listeleme
     getAll: async () => {
         const query = `
         SELECT 
@@ -77,7 +77,7 @@ const Order = {
         return rows;
     },
 
-    // Belirli bir sipari?i ID’ye göre bulma
+    // Belirli bir sipari?i IDï¿½ye gï¿½re bulma
     getById: async (id) => {
         const query = `
             SELECT 
@@ -99,10 +99,10 @@ const Order = {
         const [rows] = await pool.execute(query, [id]);
 
         if (rows.length === 0) {
-            return null; // Eðer sipariþ bulunamazsa
+            return null; // Eï¿½er sipariï¿½ bulunamazsa
         }
 
-        // Sipariþ detaylarýný formatlamak
+        // Sipariï¿½ detaylarï¿½nï¿½ formatlamak
         const order = {
             order_id: rows[0].order_id,
             user_id: rows[0].user_id,
@@ -121,7 +121,7 @@ const Order = {
         return order;
     },
 
-    // Sipari? durumu güncelleme
+    // Sipari? durumu gï¿½ncelleme
     update: async (order_id, status) => {
         const query = `
             UPDATE orders
@@ -147,12 +147,12 @@ const Order = {
             WHERE o.user_id = ?;
         `;
         try {
-            const [rows] = await pool.execute(query, [user_id]); // Buradaki parametrenin türünü kontrol edin
-            console.log('Query result:', rows); // Sorgudan dönen sonucu loglayýn
+            const [rows] = await pool.execute(query, [user_id]); // Buradaki parametrenin tï¿½rï¿½nï¿½ kontrol edin
+            console.log('Query result:', rows); // Sorgudan dï¿½nen sonucu loglayï¿½n
             return rows;
         } catch (error) {
-            console.error('Database error:', error.message); // Veritabaný hatasýný kontrol edin
-            throw error; // Hatayý yukarý fýrlatýn
+            console.error('Database error:', error.message); // Veritabanï¿½ hatasï¿½nï¿½ kontrol edin
+            throw error; // Hatayï¿½ yukarï¿½ fï¿½rlatï¿½n
         }
     },
 
@@ -172,7 +172,7 @@ const Order = {
             throw new Error(`No email found for order_id: ${order_id}`);
         }
 
-        return rows[0].email; // E-posta adresini döndür
+        return rows[0].email; // E-posta adresini dï¿½ndï¿½r
     },
 
     getPurchasedProductIds: async (userId) => {
@@ -184,7 +184,7 @@ const Order = {
         WHERE o.user_id = ?;
     `;
         const [rows] = await pool.execute(query, [userId]);
-        return rows.map(row => row.product_id); // Sadece product_id'leri döndür
+        return rows.map(row => row.product_id); // Sadece product_id'leri dï¿½ndï¿½r
     },
 
 
@@ -203,9 +203,36 @@ const Order = {
             throw new Error(`No email found for order_id: ${order_id}`);
         }
 
-        return rows[0].name; // E-posta adresini döndür
+        return rows[0].name; // E-posta adresini dï¿½ndï¿½r
     }
 
 };
+
+Order.getDeliveryList = async () => {
+    const query = `
+        SELECT 
+            o.order_id, 
+            o.user_id, 
+            u.name AS customer_name, 
+            o.delivery_address, 
+            o.status AS delivery_status, 
+            o.created_at AS order_date,
+            oi.product_id, 
+            p.name AS product_name, 
+            oi.quantity
+        FROM orders o
+        JOIN users u ON o.user_id = u.user_id
+        JOIN order_items oi ON o.order_id = oi.order_id
+        JOIN products p ON oi.product_id = p.product_id
+        ORDER BY o.created_at DESC;
+    `;
+    try {
+        const [rows] = await pool.execute(query);
+        return rows;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
 
 module.exports = Order;

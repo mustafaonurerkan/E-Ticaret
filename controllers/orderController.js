@@ -178,3 +178,22 @@ exports.sendOrderReceipt = async (req, res) => {
         res.status(500).json({ error: 'Could not send order receipt' });
     }
 };
+
+exports.getOrdersByStatus = async (req, res) => {
+    const { status } = req.query;
+    try {
+        const orders = await Order.getByStatus(status);
+        res.json(orders);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve orders' });
+    }
+};
+
+exports.getDeliveryList = async (req, res) => {
+    try {
+        const deliveries = await Order.getDeliveries();
+        res.json(deliveries);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve delivery list' });
+    }
+};

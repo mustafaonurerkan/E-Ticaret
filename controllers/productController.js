@@ -138,3 +138,15 @@ exports.searchProducts = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' }); // Genel bir hata mesajı döndür
     }
 };
+
+exports.updateStock = async (req, res) => {
+    const { productId, quantity } = req.body;
+    try {
+        const success = await Product.updateStock(productId, quantity);
+        if (success) res.json({ message: 'Stock updated successfully' });
+        else res.status(404).json({ error: 'Product not found' });
+    } catch (error) {
+        res.status(500).json({ error: 'Could not update stock' });
+    }
+};
+
