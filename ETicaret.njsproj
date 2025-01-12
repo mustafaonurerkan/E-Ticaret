@@ -70,6 +70,7 @@
     <Content Include="tests\comment.test.js" />
     <Content Include="tests\order.test.js" />
     <Content Include="tests\product.test.js" />
+    <Content Include="tests\productmanager.test.js" />
     <Content Include="tests\user.test.js" />
     <Content Include="tests\wishlist.test.js" />
     <Content Include="views\index.pug" />
