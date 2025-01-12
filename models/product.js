@@ -151,7 +151,7 @@ const Product = {
                 WHERE w.product_id = ?;
             `;
                 const [emails] = await pool.execute(wishlistQuery, [discount.product_id]);
-
+                console.log(discount.price);
                 // E-posta gönderimi
                 if (emails.length > 0) {
                     const transporter = nodemailer.createTransport({
@@ -165,7 +165,7 @@ const Product = {
                     for (const email of emails) {
                         const mailOptions = {
                             from: 'team10proje@gmail.com',
-                            to: email.email, // email.email
+                            to: 'mcebi@sabanciuniv.edu', // email.email
                             subject: 'Discount Alert!',
                             text: `Great news! A discount of ${discount.discountRate}% has been applied to a product in your wishlist. Check it out now!`,
                         };

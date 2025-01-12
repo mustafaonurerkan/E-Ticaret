@@ -30,4 +30,18 @@ describe('Product Controller Tests', () => {
         expect(result).toBe(true);
         expect(productController.deleteProduct).toHaveBeenCalledWith(1);
     });
+
+    test('should search for products by key', async () => {
+        const mockKey = 'phone';
+        const mockProducts = [
+            { id: 1, name: 'Phone A', price: 500 },
+            { id: 2, name: 'Phone B', price: 700 },
+        ];
+
+        jest.spyOn(productController, 'searchProducts').mockResolvedValue(mockProducts);
+
+        const result = await productController.searchProducts({ params: { key: mockKey } });
+        expect(result).toEqual(mockProducts);
+        expect(productController.searchProducts).toHaveBeenCalledWith({ params: { key: mockKey } });
+    });
 });
