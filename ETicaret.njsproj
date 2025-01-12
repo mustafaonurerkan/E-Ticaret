@@ -81,6 +81,7 @@
     <Content Include="tests\productController.edgetest.js" />
     <Content Include="tests\productmanager.test.js" />
     <Content Include="tests\user.test.js" />
+    <Content Include="tests\userController.edgetest.js" />
     <Content Include="tests\wishlist.test.js" />
     <Content Include="views\index.pug" />
     <Content Include="views\layout.pug" />
