@@ -1,4 +1,5 @@
 const pool = require('../db');
+const nodemailer = require('nodemailer');
 
 const Product = {
     // Yeni �r�n ekleme
@@ -103,6 +104,113 @@ const Product = {
         const [rows] = await pool.execute(query, [searchKey, searchKey]);
         return rows;
     },
+
+    updateStock: async (product_id, quantity_in_stock) => {
+        const query = `
+            UPDATE products
+            SET quantity_in_stock = ?
+            WHERE product_id = ?;
+        `;
+        try {
+            const [result] = await pool.execute(query, [quantity_in_stock, product_id]);
+            return result.affectedRows > 0; // Başarılı güncelleme için true döner
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    },
+
+
+    applyDiscount: async (product_id, discount) => {
+        console.log('Discount Rate:', discount.discountRate);
+        console.log('Product ID:', discount.product_id);
+
+        const query = `
+        UPDATE products
+        SET price = realprice * (1 - ? / 100)
+        WHERE product_id = ?;
+    `;
+
+        try {
+            // İndirimi ürün üzerinde uygula
+            const [result] = await pool.execute(query, [discount.discountRate, discount.product_id]);
+
+            if (result.affectedRows > 0) {
+                // İndirimi uygulanan ürünü getir
+                const updatedProductQuery = `
+                SELECT product_id, name, price
+                FROM products
+                WHERE product_id = ?;
+            `;
+                const [updatedProduct] = await pool.execute(updatedProductQuery, [discount.product_id]);
+
+                // Kullanıcıların e-posta adreslerini al
+                const wishlistQuery = `
+                SELECT DISTINCT u.email
+                FROM users u
+                JOIN wishlists w ON u.user_id = w.user_id
+                WHERE w.product_id = ?;
+            `;
+                const [emails] = await pool.execute(wishlistQuery, [discount.product_id]);
+
+                // E-posta gönderimi
+                if (emails.length > 0) {
+                    const transporter = nodemailer.createTransport({
+                        service: 'gmail',
+                        auth: {
+                            user: 'team10proje@gmail.com', // Gmail kullanıcı adı
+                            pass: 'hbzx nasf rhgt nzkt', // Gmail şifre
+                        },
+                    });
+
+                    for (const email of emails) {
+                        const mailOptions = {
+                            from: 'team10proje@gmail.com',
+                            to: email.email, // email.email
+                            subject: 'Discount Alert!',
+                            text: `Great news! A discount of ${discount.discountRate}% has been applied to a product in your wishlist. Check it out now!`,
+                        };
+
+                        await transporter.sendMail(mailOptions);
+                        console.log(`Email sent to: ${email.email}`);
+                    }
+                }
+
+                return updatedProduct[0]; // Güncellenen ürünün bilgileri
+            } else {
+                throw new Error('Product not found or discount could not be applied');
+            }
+        } catch (error) {
+            console.error('Error in applyDiscount:', error.message);
+            throw new Error(error.message);
+        }
+    },
+
+
+
+    applyRaise: async (product_id, raise) => {
+        console.log('Raise Rate:', raise.raiseRate);
+        console.log('Product ID:', raise.product_id);
+
+        const query = `
+        UPDATE products
+        SET price = realprice * (1 + ? / 100)
+        WHERE product_id = ?;
+    `;
+
+        try {
+            // İndirimi ürün üzerinde uygula
+            const [result] = await pool.execute(query, [raise.raiseRate, raise.product_id]);
+
+            return result.affectedRows > 0;
+
+        } catch (error) {
+            console.error('Error in applyRaise:', error.message);
+            throw new Error(error.message);
+        }
+    },
+
+
+    
     
     
 
