@@ -6,11 +6,11 @@ const Order = {
     create: async (order) => {
         console.log("Order Data:", order);
 
-        const connection = await pool.getConnection(); // Transaction ba?latma
+        const connection = await pool.getConnection(); // Transaction starting
         try {
             await connection.beginTransaction();
 
-            // Sipari? detaylar?n? orders tablosuna ekleme
+            // order detail
             const orderQuery = `
                 INSERT INTO orders (user_id, total_price, status, delivery_address)
                 VALUES (?, ?, ?, ?);
@@ -20,7 +20,11 @@ const Order = {
             const [orderResult] = await connection.execute(orderQuery, orderValues);
             const orderId = orderResult.insertId;
 
+<<<<<<< HEAD
+            // urun icin stok azaltma
+=======
             // Sipari?teki her �r�n i�in stok azaltma i?lemi
+>>>>>>> 1252389baa2af52f95a1d63dadbe578edf068890
             for (let item of order.items) {
                 const productQuery = `
                     UPDATE products 
@@ -53,7 +57,11 @@ const Order = {
         }
     },
 
+<<<<<<< HEAD
+    // all order listing
+=======
     // T�m sipari?leri listeleme
+>>>>>>> 1252389baa2af52f95a1d63dadbe578edf068890
     getAll: async () => {
         const query = `
         SELECT 

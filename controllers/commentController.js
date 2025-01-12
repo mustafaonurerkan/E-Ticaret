@@ -1,10 +1,8 @@
-// controllers/commentController.js
 const Comment = require('../models/comment');
 
 exports.createComment = async (req, res) => {
     const { user_id, product_id, rating, content, approved } = req.body;
     try {
-        // Kullanýcýnýn ürünü satýn alýp almadýðýný kontrol et
         const hasPurchased = await Comment.hasPurchased(user_id, product_id);
         if (!hasPurchased) {
             return res.status(403).json({ error: 'You cannot comment on a product you have not purchased.' });
@@ -28,7 +26,6 @@ exports.getCommentsByProductId = async (req, res) => {
     }
 };
 
-// Yorum silme
 exports.deleteComment = async (req, res) => {
     try {
         const success = await Comment.delete(req.params.id);

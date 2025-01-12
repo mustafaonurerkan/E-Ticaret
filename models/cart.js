@@ -1,7 +1,6 @@
 const pool = require('../db'); // Veritabaný baðlantýsýný import et
 
 const Cart = {
-    // Sepete yeni ürün ekleme veya miktarý güncelleme
     addToCart: async (userId, productId, quantity) => {
         const query = `
             INSERT INTO cart (user_id, product_id, quantity)
@@ -13,7 +12,6 @@ const Cart = {
         return result.affectedRows > 0;
     },
 
-    // Belirli bir kullanýcýya ait tüm sepet öðelerini getirme
     getByUserId: async (userId) => {
         const query = `
             SELECT c.cart_id, c.user_id, c.product_id, c.quantity, c.created_at, c.updated_at, p.name, p.price
@@ -25,7 +23,6 @@ const Cart = {
         return rows;
     },
 
-    // Sepetteki ürün miktarýný güncelleme
     updateQuantity: async (userId, productId, quantity) => {
         const query = `
             UPDATE cart
@@ -36,7 +33,6 @@ const Cart = {
         return result.affectedRows > 0;
     },
 
-    // Sepetten ürün kaldýrma
     removeFromCart: async (userId, productId) => {
         const query = `
             DELETE FROM cart 
@@ -46,7 +42,6 @@ const Cart = {
         return result.affectedRows > 0;
     },
 
-    // Belirli bir kullanýcýnýn sepetini temizleme
     clearCart: async (userId) => {
         const query = `
             DELETE FROM cart
