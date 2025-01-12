@@ -30,4 +30,19 @@ describe('Product Controller Tests', () => {
         expect(result).toBe(true);
         expect(productController.deleteProduct).toHaveBeenCalledWith(1);
     });
+              
+    // Belirli bir kategorideki ürünleri listeleme
+    test('should get products by category', async () => {
+        const mockCategory = 'electronics';
+        const mockProducts = [
+            { id: 1, name: 'Phone', category: 'electronics', price: 699.99 },
+            { id: 2, name: 'Laptop', category: 'electronics', price: 1299.99 },
+        ];
+
+        jest.spyOn(productController, 'getByCategory').mockResolvedValue(mockProducts);
+
+        const result = await productController.getByCategory({ params: { category: mockCategory } });
+        expect(result).toEqual(mockProducts);
+        expect(productController.getByCategory).toHaveBeenCalledWith({ params: { category: mockCategory } });
+    });
 });
