@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Ana sayfa için yönlendirme
+// Ana sayfa i�in y�nlendirme
 router.get('/', (req, res) => {
     res.send(`
         <html lang="en">

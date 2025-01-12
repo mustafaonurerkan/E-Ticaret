@@ -11,14 +11,14 @@ const Category = {
         return result.insertId;
     },
 
-    // Tüm kategorileri listeleme
+    // Tï¿½m kategorileri listeleme
     getAll: async () => {
         const query = 'SELECT * FROM categories;';
         const [rows] = await pool.execute(query);
         return rows;
     },
 
-    // Kategori güncelleme
+    // Kategori gï¿½ncelleme
     update: async (category_id, category_name) => {
         const query = `
       UPDATE categories
