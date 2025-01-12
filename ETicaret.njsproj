@@ -65,7 +65,9 @@
     <Content Include="public\stylesheets\main.css" />
     <Content Include="README.md" />
     <Content Include="routes\wishlistRoutes.js" />
+    <Content Include="tests\authController.edgetest.js" />
     <Content Include="tests\cart.test.js" />
+    <Content Include="tests\cartController.edgetest.js" />
     <Content Include="tests\category.test.js" />
     <Content Include="tests\comment.test.js" />
     <Content Include="tests\order.test.js" />
