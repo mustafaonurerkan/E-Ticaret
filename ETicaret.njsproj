@@ -71,7 +71,9 @@
     <Content Include="tests\cart.test.js" />
     <Content Include="tests\cartController.edgetest.js" />
     <Content Include="tests\category.test.js" />
+    <Content Include="tests\categoryController.edgetest.js" />
     <Content Include="tests\comment.test.js" />
+    <Content Include="tests\commentController.edgetest.js" />
     <Content Include="tests\order.test.js" />
     <Content Include="tests\product.test.js" />
     <Content Include="tests\productmanager.test.js" />
