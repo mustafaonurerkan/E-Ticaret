@@ -150,7 +150,7 @@ exports.sendOrderReceipt = async (req, res) => {
             service: 'Gmail', // �rnek olarak Gmail kullan�l�yor
             auth: {
                 user: 'team10proje@gmail.com', // E-posta adresi
-                pass: 'jbyx gfrb afdt pije'  // E-posta �ifresi veya uygulama �ifresi
+                pass: 'hbzx nasf rhgt nzkt'  // E-posta �ifresi veya uygulama �ifresi -güncellendi-
             }
         });
 
@@ -176,5 +176,24 @@ exports.sendOrderReceipt = async (req, res) => {
     } catch (error) {
         console.error('Error sending order receipt:', error.message);
         res.status(500).json({ error: 'Could not send order receipt' });
+    }
+};
+
+exports.getOrdersByStatus = async (req, res) => {
+    const { status } = req.query;
+    try {
+        const orders = await Order.getByStatus(status);
+        res.json(orders);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve orders' });
+    }
+};
+
+exports.getDeliveryList = async (req, res) => {
+    try {
+        const deliveries = await Order.getDeliveries();
+        res.json(deliveries);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not retrieve delivery list' });
     }
 };

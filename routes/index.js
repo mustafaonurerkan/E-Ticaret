@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
+<<<<<<< HEAD
+=======
+// Ana sayfa i�in y�nlendirme
+>>>>>>> 1252389baa2af52f95a1d63dadbe578edf068890
 router.get('/', (req, res) => {
     res.send(`
         <html lang="en">
@@ -73,6 +77,8 @@ const productRoutes = require('./productRoutes');
 const userRoutes = require('./userRoutes');
 const wishlistRoutes = require('./wishlistRoutes');
 const paymentRoutes = require('./paymentRoutes');
+const productManagerRoutes = require('./productManagerRoutes');
+const salesManagerRoutes = require('./salesmanagerRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/carts', cartRoutes);
@@ -83,5 +89,7 @@ router.use('/products', productRoutes);
 router.use('/users', userRoutes);
 router.use('/wishlists', wishlistRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/product-manager', productManagerRoutes);
+router.use('/salesmanager', salesManagerRoutes);
 
 module.exports = router;
