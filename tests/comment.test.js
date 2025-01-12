@@ -1,63 +1,170 @@
-const Comment = require('../models/comment'); // Comment modelini import et
-const pool = require('../db'); // Veritabaný baðlantýsýný import et
+const commentController = require('../controllers/commentController');
+const commentModel = require('../models/comment');
 
-jest.mock('../db'); // Veritabaný baðlantýsýný mock'layýn
+jest.mock('../models/comment', () => ({
+    add: jest.fn(),
+    getAll: jest.fn(),
+    getById: jest.fn(),
+    delete: jest.fn(),
+    update: jest.fn(),
+}));
 
-describe('Comment Model CRUD Operations', () => {
-    const testComment = {
-        user_id: 1,
-        product_id: 1,
-        rating: 5,
-        content: 'Great product!',
-        approved: true
-    };
+describe('Comment Controller Tests', () => {
+    test('should add a new comment', async () => {
+        commentModel.add.mockResolvedValue({ comment_id: 1 });
 
-    afterAll(async () => {
-        await pool.end(); // Testlerden sonra baðlantýyý kapat
+        const mockRequest = {
+            body: { product_id: 1, user_id: 1, text: 'Great product!' },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await commentController.addComment(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(201);
+        expect(mockResponse.json).toHaveBeenCalledWith({ comment_id: 1 });
     });
 
-    it('should create a new comment', async () => {
-        const mockInsertResult = { insertId: 1 }; // Mocklanan insertId
-        pool.execute.mockResolvedValue([mockInsertResult]); // Mock execute fonksiyonu
-
-        const commentId = await Comment.create(testComment);
-
-        expect(commentId).toBe(1); // Yeni yorum ID'si 1 olmalý
-        expect(pool.execute).toHaveBeenCalledWith(expect.any(String), expect.any(Array)); // SQL sorgusu ve parametrelerin çalýþýp çalýþmadýðýný kontrol et
-    });
-
-    it('should get all comments', async () => {
+    test('should retrieve all comments', async () => {
         const mockComments = [
-            { comment_id: 1, user_id: 1, product_id: 1, rating: 5, content: 'Great product!', approved: true },
-            { comment_id: 2, user_id: 2, product_id: 1, rating: 4, content: 'Good product!', approved: false },
+            { comment_id: 1, text: 'Great product!' },
+            { comment_id: 2, text: 'Not bad' },
         ];
-        pool.execute.mockResolvedValue([mockComments]);
+        commentModel.getAll.mockResolvedValue(mockComments);
 
-        const comments = await Comment.getAll();
+        const mockRequest = {};
+        const mockResponse = {
+            json: jest.fn(),
+        };
 
-        expect(comments).toEqual(mockComments);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM comments;');
+        await commentController.getComments(mockRequest, mockResponse);
+
+        expect(mockResponse.json).toHaveBeenCalledWith(mockComments);
     });
 
-    it('should get comments by product ID', async () => {
-        const mockComments = [
-            { comment_id: 1, user_id: 1, product_id: 1, rating: 5, content: 'Great product!', approved: true },
-        ];
-        pool.execute.mockResolvedValue([mockComments]);
+    test('should retrieve a comment by ID', async () => {
+        const mockComment = { comment_id: 1, text: 'Great product!' };
+        commentModel.getById.mockResolvedValue(mockComment);
 
-        const comments = await Comment.getByProductId(1);
+        const mockRequest = { params: { id: 1 } };
+        const mockResponse = {
+            json: jest.fn(),
+        };
 
-        expect(comments).toEqual(mockComments);
-        expect(pool.execute).toHaveBeenCalledWith('SELECT * FROM comments WHERE product_id = ?;', [1]);
+        await commentController.getCommentById(mockRequest, mockResponse);
+
+        expect(mockResponse.json).toHaveBeenCalledWith(mockComment);
     });
 
-    it('should delete a comment', async () => {
-        const mockResult = { affectedRows: 1 }; // Mocklanan silme sonucu
-        pool.execute.mockResolvedValue([mockResult]);
+    test('should delete a comment', async () => {
+        commentModel.delete.mockResolvedValue(true);
 
-        const result = await Comment.delete(1);
+        const mockRequest = { params: { id: 1 } };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
 
-        expect(result).toBe(true); // Silme baþarýlý ise true döner
-        expect(pool.execute).toHaveBeenCalledWith('DELETE FROM comments WHERE comment_id = ?;', [1]);
+        await commentController.deleteComment(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Comment deleted successfully' });
+    });
+
+    test('should update a comment', async () => {
+        commentModel.update.mockResolvedValue(true);
+
+        const mockRequest = {
+            params: { id: 1 },
+            body: { text: 'Updated comment' },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await commentController.updateComment(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Comment updated successfully' });
+    });
+
+    // Yeni Eklenen Testler
+    test('should handle invalid comment creation', async () => {
+        const mockRequest = {
+            body: { product_id: null, user_id: null, text: '' },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await commentController.addComment(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid comment data' });
+    });
+
+    test('should handle non-existent comment retrieval', async () => {
+        commentModel.getById.mockResolvedValue(null);
+
+        const mockRequest = { params: { id: 999 } };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await commentController.getCommentById(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(404);
+        expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Comment not found' });
+    });
+
+    test('should return empty array for no comments', async () => {
+        commentModel.getAll.mockResolvedValue([]);
+
+        const mockRequest = {};
+        const mockResponse = {
+            json: jest.fn(),
+        };
+
+        await commentController.getComments(mockRequest, mockResponse);
+
+        expect(mockResponse.json).toHaveBeenCalledWith([]);
+    });
+
+    test('should handle comment deletion error', async () => {
+        commentModel.delete.mockResolvedValue(false);
+
+        const mockRequest = { params: { id: 999 } };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await commentController.deleteComment(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(404);
+        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Failed to delete comment' });
+    });
+
+    test('should handle invalid comment update', async () => {
+        commentModel.update.mockResolvedValue(false);
+
+        const mockRequest = {
+            params: { id: 1 },
+            body: { text: '' },
+        };
+        const mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await commentController.updateComment(mockRequest, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid comment data' });
     });
 });
