@@ -150,7 +150,7 @@ exports.sendOrderReceipt = async (req, res) => {
             service: 'Gmail', // �rnek olarak Gmail kullan�l�yor
             auth: {
                 user: 'team10proje@gmail.com', // E-posta adresi
-                pass: 'jbyx gfrb afdt pije'  // E-posta �ifresi veya uygulama �ifresi
+                pass: 'hbzx nasf rhgt nzkt'  // E-posta �ifresi veya uygulama �ifresi -güncellendi-
             }
         });
 

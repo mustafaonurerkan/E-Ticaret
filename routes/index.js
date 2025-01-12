@@ -292,6 +292,7 @@ const userRoutes = require('./userRoutes');
 const wishlistRoutes = require('./wishlistRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const productManagerRoutes = require('./productManagerRoutes');
+const salesManagerRoutes = require('./salesmanagerRoutes');
 
 // Rota dosyalar?n? ba?lama
 router.use('/auth', authRoutes);
@@ -304,5 +305,6 @@ router.use('/users', userRoutes);
 router.use('/wishlists', wishlistRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/product-manager', productManagerRoutes);
+router.use('/salesmanager', salesManagerRoutes);
 
 module.exports = router;

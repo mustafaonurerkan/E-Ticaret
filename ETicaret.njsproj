@@ -40,6 +40,7 @@
     <Content Include="controllers\paymentController.js" />
     <Content Include="controllers\productController.js" />
     <Content Include="controllers\productManagerController.js" />
+    <Content Include="controllers\salesmanagerController.js" />
     <Content Include="controllers\userController.js" />
     <Content Include="controllers\wishlistController.js" />
     <Content Include="db.js" />
@@ -60,6 +61,7 @@
     <Content Include="routes\paymentRoutes.js" />
     <Content Include="routes\productManagerRoutes.js" />
     <Content Include="routes\productRoutes.js" />
+    <Content Include="routes\salesmanagerRoutes.js" />
     <Content Include="routes\userRoutes.js" />
     <Content Include="package.json" />
     <Content Include="public\stylesheets\main.css" />
