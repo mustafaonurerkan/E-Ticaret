@@ -15,9 +15,28 @@ describe('User Controller Tests', () => {
         const mockUser = { name: 'John Doe', email: 'john@example.com', password: '123456', role: 'user', tax_id: '12345', address: '123 Main St' };
         User.create.mockResolvedValue(1);
 
-        const result = await userController.createUser({ body: mockUser });
+        const req = { body: mockUser };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        await userController.createUser(req, res);
+
         expect(User.create).toHaveBeenCalledWith(mockUser);
-        expect(result.id).toBe(1);
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.json).toHaveBeenCalledWith({ id: 1 });
+    });
+
+    test('should get all users', async () => {
+        const mockUsers = [
+            { id: 1, name: 'John Doe', email: 'john@example.com' },
+            { id: 2, name: 'Jane Doe', email: 'jane@example.com' }
+        ];
+        User.getAll.mockResolvedValue(mockUsers);
+
+        const req = {};
+        const res = { json: jest.fn() };
+        await userController.getAllUsers(req, res);
+
+        expect(User.getAll).toHaveBeenCalled();
+        expect(res.json).toHaveBeenCalledWith(mockUsers);
     });
 
     test('should get a user by ID', async () => {
@@ -65,5 +84,17 @@ describe('User Controller Tests', () => {
 
         expect(User.update).toHaveBeenCalledWith(1, req.body);
         expect(res.json).toHaveBeenCalledWith({ message: 'User updated successfully' });
+    });
+
+    test('should return 404 when updating a non-existent user', async () => {
+        User.update.mockResolvedValue(false);
+
+        const req = { params: { id: 999 }, body: { tax_id: '54321', address: '456 Main St' } };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        await userController.updateUser(req, res);
+
+        expect(User.update).toHaveBeenCalledWith(999, req.body);
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: 'User not found or could not be updated' });
     });
 });
