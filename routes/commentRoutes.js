@@ -9,23 +9,24 @@ router.get('/', commentController.getAllComments);
 // Yorum ekleme
 router.post('/create', commentController.createComment);
 
-// Bir ürün için yorumlarý listeleme
+// Bir ï¿½rï¿½n iï¿½in yorumlarï¿½ listeleme
 router.get('/product/:id', commentController.getCommentsByProductId);
 
 // Belirli bir yorumu silme
 router.delete('/:id', commentController.deleteComment);
 
-// onaysýzlarý getir
+// onaysï¿½zlarï¿½ getir
 router.get('/unapproved', commentController.getUnapproved);
 
-// Yorum onaylama rotasý
+// Yorum onaylama rotasï¿½
 router.post('/approve', commentController.approveComment);
 /*
-onaylama için post ve body þu þekilde olmalý:
+onaylama iï¿½in post ve body ï¿½u ï¿½ekilde olmalï¿½:
 {
-    "user_id": 13, //onaylamayý gönderen user
+    "user_id": 13, //onaylamayï¿½ gï¿½nderen user
     "comment_id": 5 //onaylanacak comment
 }
 */
+router.post('/add-rating', commentController.addRating);
 
 module.exports = router;

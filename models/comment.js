@@ -18,14 +18,14 @@ const Comment = {
     },
 
 
-    // Tüm yorumlar? listeleme
+    // Tï¿½m yorumlar? listeleme
     getAll: async () => {
         const query = 'SELECT * FROM comments;';
         const [rows] = await pool.execute(query);
         return rows;
     },
 
-    // Belirli bir ürüne ait yorumlar? bulma
+    // Belirli bir ï¿½rï¿½ne ait yorumlar? bulma
     getByProductId: async (productId) => {
         const query = 'SELECT * FROM comments WHERE product_id = ?;';
         const [rows] = await pool.execute(query, [productId]);
@@ -50,7 +50,7 @@ const Comment = {
         return rows;
     },
 
-    // Kullanýcýnýn belirli bir ürünü satýn alýp almadýðýný kontrol et
+    // Kullanï¿½cï¿½nï¿½n belirli bir ï¿½rï¿½nï¿½ satï¿½n alï¿½p almadï¿½ï¿½ï¿½nï¿½ kontrol et
     hasPurchased: async (userId, productId) => {
         const query = `
             SELECT COUNT(*) AS order_count
@@ -79,6 +79,16 @@ const Comment = {
         const [rows] = await pool.execute(query, [userId]);
         return rows[0]?.role || null;
     },
+    
+    addRating: async (user_id, product_id, rating) => {
+        const query = `
+            INSERT INTO comments (user_id, product_id, rating, content, approved)
+            VALUES (?, ?, ?, NULL, true);
+        `;
+        const [result] = await pool.execute(query, [user_id, product_id, rating]);
+        return result.insertId;
+    },
+    
 };
 
 module.exports = Comment;

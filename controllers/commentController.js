@@ -1,21 +1,39 @@
 const Comment = require('../models/comment');
 
 exports.createComment = async (req, res) => {
-    const { user_id, product_id, rating, content, approved } = req.body;
+    const { user_id, product_id, content } = req.body;
+
     try {
         const hasPurchased = await Comment.hasPurchased(user_id, product_id);
         if (!hasPurchased) {
             return res.status(403).json({ error: 'You cannot comment on a product you have not purchased.' });
         }
 
-        // Yorum ekleme iþlemi
-        const commentId = await Comment.create({ user_id, product_id, rating, content });
+        const commentId = await Comment.create({ user_id, product_id, content, rating: null });
         res.status(201).json({ message: 'Comment added successfully', comment_id: commentId });
     } catch (error) {
         console.error('Error creating comment:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+exports.addRating = async (req, res) => {
+    const { user_id, product_id, rating } = req.body;
+
+    try {
+        const hasPurchased = await Comment.hasPurchased(user_id, product_id);
+        if (!hasPurchased) {
+            return res.status(403).json({ error: 'You cannot rate a product you have not purchased.' });
+        }
+
+        const ratingId = await Comment.addRating(user_id, product_id, rating);
+        res.status(201).json({ message: 'Rating added successfully', rating_id: ratingId });
+    } catch (error) {
+        console.error('Error adding rating:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 
 exports.getCommentsByProductId = async (req, res) => {
     try {
@@ -61,7 +79,7 @@ exports.approveComment = async (req, res) => {
     const { user_id, comment_id } = req.body;
 
     try {
-        // Kullanýcýnýn rolünü kontrol et
+        // Kullanï¿½cï¿½nï¿½n rolï¿½nï¿½ kontrol et
         const role = await Comment.getUserRole(user_id);
         if (role !== 'product_manager') {
             return res.status(403).json({ error: 'You do not have permission to approve comments' });
