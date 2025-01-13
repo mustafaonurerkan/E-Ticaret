@@ -168,7 +168,7 @@ const Product = {
                     for (const email of emails) {
                         const mailOptions = {
                             from: 'team10proje@gmail.com',
-                            to: 'mcebi@sabanciuniv.edu', // email.email
+                            to: email.email, // email.email
                             subject: 'Discount Alert!',
                             text: `Great news! A discount of ${discount.discountRate}% has been applied to a product: "${p.name}" in your wishlist. Now, its price is ${p.price}! Check it out now!`,
                         };

@@ -33,6 +33,8 @@ exports.applyRaise = async (req, res) => {
 
 };
 
+
+
 exports.salesReport = async (req, res) => {
     try {
         const { startDate, endDate } = req.body;
@@ -52,73 +54,96 @@ exports.salesReport = async (req, res) => {
             return res.status(404).json({ error: 'No orders found in the given date range' });
         }
 
-        // PDF oluþtur
-        const pdfPath = `${process.cwd() }/sales_report_${startDate}_to_${endDate}.pdf`; 
+        let costs = 0;
+        let revenue = 0;
+
+        const orderDetails = await Promise.all(
+            filteredOrders.map(async (order) => {
+                const items = filteredOrders.filter(item => item.order_id === order.order_id);
+                const itemDetails = await Promise.all(
+                    items.map(async (item) => {
+                        const product = await Product.getById(item.product_id);
+
+                        if (!product) {
+                            console.error(`Product not found for product_id: ${item.product_id}`);
+                            return {
+                                productName: item.product_name,
+                                quantity: item.quantity,
+                                price: item.item_price,
+                                realPrice: 0,
+                                notFound: true,
+                            };
+                        }
+                        console.log(`Product id: ${product.product_id}, product cost: ${(product.realprice * item.quantity) * 0.6}`);
+                        costs += (product.realprice * item.quantity)*0.6;  //random belirlendi, kar marjý 40%
+                        return {
+                            productName: item.product_name,
+                            quantity: item.quantity,
+                            price: item.item_price,
+                            realPrice: product.realprice,
+                            notFound: false,
+                        };
+                    })
+                );
+
+                revenue += Number(order.total_price);
+
+                return {
+                    orderId: order.order_id,
+                    createdAt: order.created_at,
+                    totalPrice: order.total_price,
+                    items: itemDetails,
+                };
+            })
+        );
+
+        // PDF oluþturma iþlemi
+        const pdfPath = `${process.cwd()}/sales_report_${startDate}_to_${endDate}.pdf`;
         const doc = new PDFDocument();
-
         doc.pipe(fs.createWriteStream(pdfPath));
-
-        console.log(`PDF will be saved at: ${pdfPath}`);
 
         doc.fontSize(20).text(`Sales Report: ${startDate} to ${endDate}`, { align: 'center' });
         doc.moveDown();
-        let costs = 0
-        let revenue = 0
 
-        for (const order of filteredOrders) {
-            doc.fontSize(14).text(`Order ID: ${order.order_id}`);
-            //doc.text(`User ID: ${order.user_id}`);
-            //doc.text(`Status: ${order.status}`);
-            //doc.text(`Delivery Address: ${order.delivery_address}`);
-            doc.text(`Ordered At: ${order.created_at}`);
+        for (const order of orderDetails) {
+            doc.fontSize(14).text(`Order ID: ${order.orderId}`);
+            doc.text(`Ordered At: ${order.createdAt}`);
             doc.text('Items:', { underline: true });
 
-            const items = filteredOrders.filter(item => item.order_id === order.order_id);
-
-            for (const item of items) {
-
-                    /*const product = await Product.getById(item.product_id);
-
-                if (!product) {
-                    console.error(`Product not found for product_id: ${product.product_id}`);
-                    doc.text(`- Product: ${item.product_name} (Product not found)`);
+            for (const item of order.items) {
+                if (item.notFound) {
+                    doc.text(`- Product: ${item.productName} (Product not found)`);
+                } else {
+                    doc.text(`- Product: ${item.productName}`);
+                    doc.text(`  Quantity: ${item.quantity}`);
+                    doc.text(`  Price: $${item.price}`);
                 }
-
-                // Ürünün realprice'ini ve adedini kullanarak maliyet hesapla
-                if (product.realprice) {
-                    console.log(`Realprice for product_id: ${product.product_id}: ${product.realprice}`);
-                }
-
-                costs += product.realprice * item.quantity;*/
-
-                doc.text(`- Product: ${item.product_name}`);
-                doc.text(`  Quantity: ${item.quantity}`);
-                doc.text(`  Price: $${item.item_price}`);
-                //console.log(costs);
-                }
-
-            doc.text(`Revenue: $${order.total_price}`);
-            revenue += order.total_price;
-            
-        }
-
-        doc.moveDown();
-        doc.text(`Total Profit: $${revenue - costs}`);
-        console.log(`Total Profit: $${(revenue - costs).toFixed(2)}`)
-        doc.end();
-
-        // Ýstemciye PDF dosyasýný gönder
-        res.download(pdfPath, (err) => {
-            if (err) {
-                console.error('Error downloading the PDF:', err.message);
-                return res.status(500).json({ error: 'Could not download the PDF' });
             }
 
-            // PDF dosyasýný sil
-            fs.unlinkSync(pdfPath);
+            doc.text(`Revenue: $${order.totalPrice}`);
+            doc.moveDown();
+        }
+
+        doc.text(`Total Revenue: $${revenue.toFixed(2)}`);
+        const totalProfit = revenue - costs;
+        doc.text(`Total Profit: $${totalProfit.toFixed(2)}`);
+        doc.end();
+
+        // PDF oluþturulduktan sonra indir
+        doc.pipe(fs.createWriteStream(pdfPath)).on('finish', () => {
+            res.download(pdfPath, (err) => {
+                if (err) {
+                    console.error('Error downloading the PDF:', err.message);
+                    return res.status(500).json({ error: 'Could not download the PDF' });
+                }
+
+                // PDF dosyasýný sil
+                fs.unlinkSync(pdfPath);
+            });
         });
     } catch (error) {
         console.error('Error generating sales report:', error.message);
         res.status(500).json({ error: 'Could not generate sales report' });
     }
 };
+
