@@ -41,7 +41,7 @@ exports.salesReport = async (req, res) => {
             return res.status(400).json({ error: 'Please provide a valid startDate and endDate' });
         }
 
-        // Tüm sipariþleri al ve verilen tarih aralýðýnda filtrele
+        // Tï¿½m sipariï¿½leri al ve verilen tarih aralï¿½ï¿½ï¿½nda filtrele
         const allOrders = await Order.getAll();
         const filteredOrders = allOrders.filter(order => {
             const createdAt = new Date(order.created_at);
@@ -52,7 +52,7 @@ exports.salesReport = async (req, res) => {
             return res.status(404).json({ error: 'No orders found in the given date range' });
         }
 
-        // PDF oluþtur
+        // PDF oluï¿½tur
         const pdfPath = `${process.cwd() }/sales_report_${startDate}_to_${endDate}.pdf`; 
         const doc = new PDFDocument();
 
@@ -84,7 +84,7 @@ exports.salesReport = async (req, res) => {
                     doc.text(`- Product: ${item.product_name} (Product not found)`);
                 }
 
-                // Ürünün realprice'ini ve adedini kullanarak maliyet hesapla
+                // ï¿½rï¿½nï¿½n realprice'ini ve adedini kullanarak maliyet hesapla
                 if (product.realprice) {
                     console.log(`Realprice for product_id: ${product.product_id}: ${product.realprice}`);
                 }
@@ -107,14 +107,14 @@ exports.salesReport = async (req, res) => {
         console.log(`Total Profit: $${(revenue - costs).toFixed(2)}`)
         doc.end();
 
-        // Ýstemciye PDF dosyasýný gönder
+        // ï¿½stemciye PDF dosyasï¿½nï¿½ gï¿½nder
         res.download(pdfPath, (err) => {
             if (err) {
                 console.error('Error downloading the PDF:', err.message);
                 return res.status(500).json({ error: 'Could not download the PDF' });
             }
 
-            // PDF dosyasýný sil
+            // PDF dosyasï¿½nï¿½ sil
             fs.unlinkSync(pdfPath);
         });
     } catch (error) {
@@ -122,3 +122,16 @@ exports.salesReport = async (req, res) => {
         res.status(500).json({ error: 'Could not generate sales report' });
     }
 };
+
+// Process a refund request
+// exports.processRefund = async (req, res) => {
+//     const { orderId, productId } = req.body;
+
+//     try {
+//         const refundResult = await Order.processRefund(orderId, productId);
+//         res.status(200).json(refundResult);
+//     } catch (error) {
+//         res.status(500).json({ error: 'Failed to process refund' });
+//     }
+// };
+
