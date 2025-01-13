@@ -33,6 +33,21 @@ exports.applyRaise = async (req, res) => {
 
 };
 
+exports.setPrice = async (req, res) => {
+    const { product_id, price } = req.body;
+    try {
+        const success = await Product.setPrice(product_id, price);
+        if (success) {
+            res.json({ message: 'Product price set successfully' });
+        } else {
+            res.status(404).json({ error: 'Product not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not set product price' });
+    }
+
+};
+
 
 
 exports.salesReport = async (req, res) => {

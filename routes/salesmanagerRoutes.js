@@ -11,4 +11,7 @@ router.put('/applyRaise', salesmanagerController.applyRaise);
 //all orders and invoice as pdf and print
 router.post('/salesreport', salesmanagerController.salesReport);
 
+//set price
+router.put('/setPrice', salesmanagerController.setPrice);
+
 module.exports = router;
