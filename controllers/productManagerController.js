@@ -44,15 +44,6 @@ exports.createCategory = async (req, res) => {
     }
 };
 
-exports.createCategory = async (req, res) => {
-    try {
-        const categoryId = await Category.create(req.body);
-        res.status(201).json({ message: 'Category created successfully', categoryId });
-    } catch (error) {
-        console.error('Error creating category:', error.message);
-        res.status(500).json({ error: 'Failed to create category', detail: error.message });
-    }
-};
 
 exports.updateCategory = async (req, res) => {
     const { categoryId } = req.params;
