@@ -2,23 +2,28 @@
 const pool = require('../db');
 
 const Wishlist = {
-    add: async (user_id, product_id) => {
+    add: async (userId, productId) => {
         const query = `
-        INSERT INTO wishlists (user_id, product_id)
-        VALUES (?, ?)
-        ON DUPLICATE KEY UPDATE product_id = product_id;
+            INSERT INTO wishlists (user_id, product_id)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE product_id = product_id;
         `;
-        const [result] = await pool.execute(query, [user_id, product_id]);
-        return result.affectedRows > 0;
+        try {
+            const [result] = await pool.execute(query, [userId, productId]);
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Database error:', error.message);
+            throw error;
+        }
     },
 
     getByUserId: async (userId) => {
         const query = `
-        SELECT p.product_id, p.name, p.price
-        FROM wishlists w
-        JOIN products p ON w.product_id = p.product_id
-        WHERE w.user_id = ?;
-    `;
+            SELECT w.wishlist_id, w.product_id, p.name AS product_name
+            FROM wishlists w
+            JOIN products p ON w.product_id = p.product_id
+            WHERE w.user_id = ?;
+        `;
         const [rows] = await pool.execute(query, [userId]);
         return rows;
     },
@@ -30,14 +35,14 @@ const Wishlist = {
         return result.affectedRows > 0;
     },
 
-    getByName: async (userId, productName) => {
+    getByName: async (user_id, productName) => {
         const query = `
             SELECT p.product_id, p.name, p.price
             FROM wishlists w
             JOIN products p ON w.product_id = p.product_id
             WHERE w.user_id = ? AND p.name LIKE ?;
         `;
-        const [rows] = await pool.execute(query, [userId, `%${productName}%`]);
+        const [rows] = await pool.execute(query, [user_id, `%${productName}%`]);
         return rows;
     },
 
