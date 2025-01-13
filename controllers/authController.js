@@ -44,6 +44,7 @@ exports.login = async (req, res) => {
             res.json({
                 token,
                 name: user.name, // Kullanıcı adı
+                role: user.role,
                 message: 'Login successful',
                 userIdNumber: user.user_id/*burası*/
                 
