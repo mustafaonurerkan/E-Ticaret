@@ -213,6 +213,22 @@ const Product = {
     },
 
 
+    //set Price by Sales Manager
+    setPrice: async (product_id, price) => {
+        const query = `
+      UPDATE products
+      SET price = ?
+      WHERE product_id = ?;
+    `;
+        try {
+            const [result] = await pool.execute(query, [price, product_id]);
+            return result.affectedRows > 0; // Başarılı güncelleme için true döner
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    },
+
+
     
     
 
