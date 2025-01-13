@@ -218,4 +218,15 @@ const Product = {
 
 };
 
+const updateStock = async (product_id, quantity) => {
+    const query = `
+        UPDATE products
+        SET quantity_in_stock = quantity_in_stock + ?
+        WHERE product_id = ?;
+    `;
+    const [result] = await pool.execute(query, [quantity, product_id]);
+    return result.affectedRows > 0;
+};
+
+
 module.exports = Product;
