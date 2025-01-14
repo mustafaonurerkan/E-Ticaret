@@ -29,9 +29,9 @@ const Wishlist = {
     },
 
 
-    delete: async (id) => {
-        const query = 'DELETE FROM wishlists WHERE wishlist_id = ?;';
-        const [result] = await pool.execute(query, [id]);
+    delete: async (userid, productid) => {
+        const query = 'DELETE FROM wishlists WHERE user_id = ? AND product_id = ?;';
+        const [result] = await pool.execute(query, [userid, productid]);
         return result.affectedRows > 0;
     },
 

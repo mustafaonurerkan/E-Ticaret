@@ -12,7 +12,7 @@ router.post('/', wishlistController.addToWishlist);
 router.get('/user/:userId', wishlistController.getWishlistByUserId);
 
 // Belirli bir istek listesi ögesini silme
-router.delete('/:id', wishlistController.deleteWishlistItem);
+router.delete('/', wishlistController.deleteWishlistItem);
 
 // Ýstek listesinde isim ile ürün arama
 router.get('/user/:userId/search', wishlistController.getByName);
