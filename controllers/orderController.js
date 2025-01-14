@@ -108,25 +108,61 @@ exports.getPurchasedProducts = async (req, res) => {
 
 
 
-/*exports.sendOrderReceipt = async (req, res) => {
+exports.sendOrderReceipt = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Sipari� bilgilerini al
+        // Sipariş bilgilerini al
         const order = await Order.getById(id);
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Kullan�c�n�n e-posta adresini al
+        // Kullanıcının e-posta adresini al
         const email = await Order.getUserEmailByOrderId(id);
         const username = await Order.getUsernamebyOrderId(id);
 
-        // PDF olu�tur
+        // PDF oluştur
         const pdfPath = `./order_${id}_receipt.pdf`;
         const doc = new PDFDocument();
-        
+
         doc.pipe(fs.createWriteStream(pdfPath));
+        const pdfBuffer = []; // Buffer için bir dizi
+
+        // Buffer'a yazmak için 'data' olayını dinle
+        doc.on('data', (chunk) => pdfBuffer.push(chunk));
+        doc.on('end', async () => {
+            const finalPdf = Buffer.concat(pdfBuffer);
+
+            // E-posta gönderimi
+            const transporter = nodemailer.createTransport({
+                service: 'Gmail', // Örnek olarak Gmail kullanılıyor
+                auth: {
+                    user: 'team10proje@gmail.com', // E-posta adresi
+                    pass: 'hbzx nasf rhgt nzkt' // E-posta şifresi veya uygulama şifresi
+                }
+            });
+
+            const mailOptions = {
+                from: 'team10proje@gmail.com',
+                to: email, // email
+                subject: `Order Receipt - Order #${id}`,
+                text: `Dear Customer,\n\nPlease find attached the receipt for your order #${id}.\n\nThank you for shopping with us!`,
+                attachments: [
+                    {
+                        filename: `order_${id}_receipt.pdf`,
+                        content: finalPdf
+                    }
+                ]
+            };
+
+            await transporter.sendMail(mailOptions);
+
+            // Postman'e PDF dosyasını yanıt olarak gönder
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="order_${id}_receipt.pdf"`);
+            res.send(finalPdf);
+        });
 
         doc.fontSize(20).text(`Order Receipt: #${id}`, { align: 'center' });
         doc.moveDown();
@@ -148,40 +184,12 @@ exports.getPurchasedProducts = async (req, res) => {
         });
 
         doc.end();
-
-        // E-posta g�nderimi
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail', // �rnek olarak Gmail kullan�l�yor
-            auth: {
-                user: 'team10proje@gmail.com', // E-posta adresi
-                pass: 'hbzx nasf rhgt nzkt'  // E-posta �ifresi veya uygulama �ifresi -güncellendi-
-            }
-        });
-
-        const mailOptions = {
-            from: 'team10proje@gmail.com',
-            to: email, //email
-            subject: `Order Receipt - Order #${id}`,
-            text: `Dear Customer,\n\nPlease find attached the receipt for your order #${id}.\n\nThank you for shopping with us!`,
-            attachments: [
-                {
-                    filename: `order_${id}_receipt.pdf`,
-                    path: pdfPath
-                }
-            ]
-        };
-
-        await transporter.sendMail(mailOptions);
-
-        // PDF dosyas�n� sil
-        fs.unlinkSync(pdfPath);
-
-        res.json({ message: 'Order receipt sent successfully' });
     } catch (error) {
         console.error('Error sending order receipt:', error.message);
         res.status(500).json({ error: 'Could not send order receipt' });
     }
 };
+
 
 exports.getOrdersByStatus = async (req, res) => {
     const { status } = req.query;
@@ -200,10 +208,12 @@ exports.getDeliveryList = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Could not retrieve delivery list' });
     }
-};*/
+};
 
 
-exports.sendOrderReceipt = async (req, res) => {
+
+//with download
+/*exports.sendOrderReceipt = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -271,6 +281,8 @@ exports.sendOrderReceipt = async (req, res) => {
             try {
                 await transporter.sendMail(mailOptions);
                 console.log(mailOptions.to);
+
+                
                 // PDF'yi indirme yanıtı
                 res.setHeader('Content-Type', 'application/pdf');
                 res.setHeader('Content-Disposition', `attachment; filename=order_${id}_receipt.pdf`);
@@ -283,7 +295,7 @@ exports.sendOrderReceipt = async (req, res) => {
                 });
             } catch (error) {
                 console.error('Error sending email:', error.message);
-                fs.unlinkSync(pdfPath); // Hata durumunda PDF'yi sil
+                
                 res.status(500).json({ error: 'Could not send email or download PDF' });
             }
         });
@@ -293,7 +305,7 @@ exports.sendOrderReceipt = async (req, res) => {
         console.error('Error sending order receipt:', error.message);
         res.status(500).json({ error: 'Could not send order receipt' });
     }
-};
+};*/
 
 
 
