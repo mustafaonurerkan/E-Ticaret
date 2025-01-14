@@ -33,4 +33,7 @@ router.post('/refund/request', orderController.createRefundRequest);
 // Ýade taleplerini onaylama/reddetme
 router.put('/refund/approve/:id', orderController.approveRefund);
 
+// Refund requestleri listeleyen endpoint
+router.get('/refundRequests', orderController.getAllRefundRequests);
+
 module.exports = router;
