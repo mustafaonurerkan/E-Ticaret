@@ -19,11 +19,16 @@ const Wishlist = {
 
     getByUserId: async (userId) => {
         const query = `
-            SELECT w.wishlist_id, w.product_id, p.name AS product_name
-            FROM wishlists w
-            JOIN products p ON w.product_id = p.product_id
-            WHERE w.user_id = ?;
-        `;
+        SELECT 
+            w.wishlist_id, 
+            w.product_id, 
+            p.name AS product_name, 
+            p.photo_url AS product_image, 
+            p.price AS product_price
+        FROM wishlists w
+        JOIN products p ON w.product_id = p.product_id
+        WHERE w.user_id = ?;
+    `;
         const [rows] = await pool.execute(query, [userId]);
         return rows;
     },
