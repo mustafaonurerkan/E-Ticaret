@@ -319,13 +319,17 @@ exports.createRefundRequest = async (req, res) => {
             return res.status(404).json({ error: 'Sipariş bulunamadı' });
         }
 
+        if (!order.items || !Array.isArray(order.items)) {
+            return res.status(500).json({ error: 'Order items not found or invalid format' });
+        }
+
         const refundResults = [];
 
         for (const product of products) {
             const { product_id, quantity } = product;
 
             // Ürün miktarı kontrolü
-            const orderItem = order.find(item => item.product_id === product_id);
+            const orderItem = order.items.find(item => item.product_id === product_id);
             if (!orderItem || orderItem.quantity < quantity) {
                 refundResults.push({
                     product_id,
@@ -345,8 +349,7 @@ exports.createRefundRequest = async (req, res) => {
                 continue;
             }
 
-
-            // İade kayıt ekleme
+            // İade talebini kaydet ve durumu 'refund-pending' yap
             const refundAmount = quantity * orderItem.item_price;
             const refundId = await Return.create({
                 order_id,
@@ -356,8 +359,7 @@ exports.createRefundRequest = async (req, res) => {
                 status: 'pending'
             });
 
-            // Stok artırma
-            await Product.updateStock(product_id, quantity);
+            await Order.updateItemStatus(order_id, product_id, 'refund-pending');
 
             refundResults.push({
                 product_id,
@@ -379,31 +381,29 @@ exports.createRefundRequest = async (req, res) => {
 
 
 
-
-
 exports.approveRefund = async (req, res) => {
     const { id } = req.params; // İade talebi ID'si
     const { approved } = req.body;
 
     try {
-        const refundRequests = await Order.getRefundsById(id); // Tüm ilgili iade taleplerini al
+        const refundRequests = await Return.getRefundsById(id); // İlgili iade taleplerini al
 
         if (!refundRequests.length) {
             return res.status(404).json({ error: "İade talepleri bulunamadı." });
         }
 
         for (let refund of refundRequests) {
-            const { product_id, refund_amount, quantity } = refund;
+            const { product_id, order_id, quantity } = refund;
 
             if (approved) {
-                // Stoğu güncelle
+                // Stoğu güncelle ve durumu 'refunded' yap
                 await Product.updateStock(product_id, quantity);
-
-                // Durumu onayla
-                await Order.updateRefundStatus(refund.return_id, 'approved');
+                await Order.updateItemStatus(order_id, product_id, 'refunded');
+                await Return.updateRefundStatus(refund.return_id, 'approved');
             } else {
-                // Durumu reddet
-                await Order.updateRefundStatus(refund.return_id, 'rejected');
+                // Durumu 'refund-pending'den 'rejected' olarak değiştir
+                await Order.updateItemStatus(order_id, product_id, 'processing'); // Durumu geri al
+                await Return.updateRefundStatus(refund.return_id, 'rejected');
             }
         }
 
@@ -413,6 +413,25 @@ exports.approveRefund = async (req, res) => {
     } catch (error) {
         console.error("Refund approval error:", error.message);
         res.status(500).json({ error: "İade talepleri işlenemedi." });
+    }
+};
+
+
+
+exports.getAllRefundRequests = async (req, res) => {
+    try {
+        console.log('Fetching refund requests...');
+        const refundRequests = await Order.getAllRefundRequests();
+        console.log('Refund requests fetched:', refundRequests);
+
+        if (!refundRequests || refundRequests.length === 0) {
+            return res.status(404).json({ error: 'No refund requests found' });
+        }
+
+        res.status(200).json({ refundRequests });
+    } catch (error) {
+        console.error('Error fetching refund requests:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 

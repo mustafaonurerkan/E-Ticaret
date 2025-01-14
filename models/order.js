@@ -261,15 +261,71 @@ const Order = {
         return rows;
     },
 
-    getOrderDetails: async (order_id) => {
+    getOrderDetails: async (order_id, user_id) => {
         const query = `
-            SELECT o.*, oi.product_id, oi.quantity, oi.price AS item_price
-            FROM orders o
-            JOIN order_items oi ON o.order_id = oi.order_id
-            WHERE o.order_id = ?;
+        SELECT 
+            o.order_id, 
+            o.user_id, 
+            oi.product_id, 
+            oi.quantity, 
+            oi.price AS item_price, 
+            p.name AS product_name
+        FROM orders o
+        LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        LEFT JOIN products p ON oi.product_id = p.product_id
+        WHERE o.order_id = ? AND o.user_id = ?;
+    `;
+
+        const [rows] = await pool.execute(query, [order_id, user_id]);
+
+        if (rows.length === 0) {
+            return null; // Sipariş bulunamadıysa null döndür
+        }
+
+        // Sipariş detaylarını yapılandır
+        return {
+            order_id: rows[0].order_id,
+            user_id: rows[0].user_id,
+            items: rows.map(row => ({
+                product_id: row.product_id,
+                product_name: row.product_name,
+                quantity: row.quantity,
+                item_price: row.item_price
+            }))
+        };
+    },
+
+
+    getAllRefundRequests: async () => {
+        const query = `
+            SELECT r.return_id, r.order_id, r.product_id, r.refund_amount, r.status, r.created_at,
+                   o.user_id, o.total_price, o.delivery_address
+            FROM returns r
+            JOIN orders o ON r.order_id = o.order_id
+            WHERE r.status = 'pending';
         `;
-        const [rows] = await pool.execute(query, [order_id]);
-        return rows.length > 0 ? rows : null;
+        const [rows] = await pool.execute(query);
+        return rows; 
+    },
+
+    updateItemStatus: async (orderId, productId, status) => {
+        const query = `
+        UPDATE order_items
+        SET status = ?
+        WHERE order_id = ? AND product_id = ?;
+    `;
+        const [result] = await pool.execute(query, [status, orderId, productId]);
+        return result.affectedRows > 0;
+    },
+
+    getItemStatus: async (orderId, productId) => {
+        const query = `
+        SELECT status
+        FROM order_items
+        WHERE order_id = ? AND product_id = ?;
+    `;
+        const [rows] = await pool.execute(query, [orderId, productId]);
+        return rows.length > 0 ? rows[0].status : null;
     }
 
 
