@@ -2,17 +2,19 @@
 const Wishlist = require('../models/wishlist');
 
 exports.addToWishlist = async (req, res) => {
-    const { user_id, product_id } = req.body; // JSON isteðinden user_id ve product_id alýnýyor
+    const { user_id, product_id } = req.body;
+
     try {
-        const success = await Wishlist.add(user_id, product_id);
-        if (success) {
-            res.status(201).json({ message: 'Product added to wishlist' });
-        } else {
-            res.status(400).json({ error: 'Could not add product to wishlist' });
+        // Wishlist'e ekleme
+        const added = await Wishlist.add(user_id, product_id);
+        if (!added) {
+            return res.status(400).json({ message: 'Ürün zaten istek listesinde.' });
         }
+
+        res.status(200).json({ message: 'Ürün istek listesine eklendi.' });
     } catch (error) {
-        console.error("Error adding to wishlist:", error.message);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error adding to wishlist:', error);
+        res.status(500).json({ message: 'Bir hata oluþtu.', error });
     }
 };
 
@@ -42,10 +44,10 @@ exports.deleteWishlistItem = async (req, res) => {
 
 // Ýsim ile istek listesindeki ürünleri getirme
 exports.getByName = async (req, res) => {
-    const { userId } = req.params;
+    const { user_id } = req.params;
     const { name } = req.query;
     try {
-        const items = await Wishlist.getByName(userId, name);
+        const items = await Wishlist.getByName(user_id, name);
         res.json(items);
     } catch (error) {
         res.status(500).json({ error: 'Could not retrieve wishlist items by name' });
