@@ -221,7 +221,7 @@ exports.sendOrderReceipt = async (req, res) => {
         const pdfPath = `./order_${id}_receipt.pdf`;
         const doc = new PDFDocument();
 
-        doc.pipe(fs.createWriteStream(pdfPath));
+        //doc.pipe(fs.createWriteStream(pdfPath));
 
         doc.fontSize(20).text(`Order Receipt: #${id}`, { align: 'center' });
         doc.moveDown();
@@ -242,7 +242,7 @@ exports.sendOrderReceipt = async (req, res) => {
             doc.moveDown();
         });
 
-        doc.end();
+        //doc.end();
 
         // PDF oluşturma işlemi tamamlandıktan sonra devam et
         doc.pipe(fs.createWriteStream(pdfPath)).on('finish', async () => {
@@ -268,20 +268,27 @@ exports.sendOrderReceipt = async (req, res) => {
                 ]
             };
 
-            await transporter.sendMail(mailOptions);
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log(mailOptions.to);
+                // PDF'yi indirme yanıtı
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `attachment; filename=order_${id}_receipt.pdf`);
 
-            // Postman'de PDF'yi indirmek için yanıt olarak gönder
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=order_${id}_receipt.pdf`);
+                const fileStream = fs.createReadStream(pdfPath);
+                fileStream.pipe(res);
 
-            const fileStream = fs.createReadStream(pdfPath);
-            fileStream.pipe(res);
-
-            // PDF dosyasını indirdikten sonra sil
-            fileStream.on('end', () => {
-                fs.unlinkSync(pdfPath);
-            });
+                fileStream.on('end', () => {
+                    //fs.unlinkSync(pdfPath); // PDF dosyasını sil
+                });
+            } catch (error) {
+                console.error('Error sending email:', error.message);
+                fs.unlinkSync(pdfPath); // Hata durumunda PDF'yi sil
+                res.status(500).json({ error: 'Could not send email or download PDF' });
+            }
         });
+
+        doc.end();
     } catch (error) {
         console.error('Error sending order receipt:', error.message);
         res.status(500).json({ error: 'Could not send order receipt' });

@@ -80,7 +80,7 @@ exports.salesReport = async (req, res) => {
                         const product = await Product.getById(item.product_id);
 
                         if (!product) {
-                            console.error(`Product not found for product_id: ${item.product_id}`);
+                            console.error(`Product not found for product_id: ${item.product_id || 'No product id'}`);
                             return {
                                 productName: item.product_name,
                                 quantity: item.quantity,
@@ -115,7 +115,11 @@ exports.salesReport = async (req, res) => {
         // PDF oluþturma iþlemi
         const pdfPath = `${process.cwd()}/sales_report_${startDate}_to_${endDate}.pdf`;
         const doc = new PDFDocument();
-        doc.pipe(fs.createWriteStream(pdfPath));
+
+        
+
+
+        doc.font(`${process.cwd()}/fonts/Arial.ttf`);
 
         doc.fontSize(20).text(`Sales Report: ${startDate} to ${endDate}`, { align: 'center' });
         doc.moveDown();
@@ -127,7 +131,14 @@ exports.salesReport = async (req, res) => {
 
             for (const item of order.items) {
                 if (item.notFound) {
-                    doc.text(`- Product: ${item.productName} (Product not found)`);
+
+                    let productName = item.product_name || 'No product name';
+                    productName = productName.replace(/"/g, "'");
+                    productName = productName.replace(/\//g, '&sol;'); // Slash'i HTML entity'ye dönüþtürme
+
+
+
+                    doc.text(`- Product: ${productName} (Product not found)`);
                 } else {
                     doc.text(`- Product: ${item.productName}`);
                     doc.text(`  Quantity: ${item.quantity}`);
@@ -153,9 +164,10 @@ exports.salesReport = async (req, res) => {
                 }
 
                 // PDF dosyasýný sil
-                fs.unlinkSync(pdfPath);
+                //fs.unlinkSync(pdfPath);
             });
         });
+        
     } catch (error) {
         console.error('Error generating sales report:', error.message);
         res.status(500).json({ error: 'Could not generate sales report' });

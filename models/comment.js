@@ -79,6 +79,18 @@ const Comment = {
         const [rows] = await pool.execute(query, [userId]);
         return rows[0]?.role || null;
     },
+
+    getUnapproved: async () => {
+        const query = `
+            SELECT c.comment_id, c.content, u.name AS user_name, p.name AS product_name
+            FROM comments c
+            JOIN users u ON c.user_id = u.user_id
+            JOIN products p ON c.product_id = p.product_id
+            WHERE c.approved = false
+        `;
+        const [rows] = await pool.execute(query);
+        return rows;
+    },
 };
 
 module.exports = Comment;

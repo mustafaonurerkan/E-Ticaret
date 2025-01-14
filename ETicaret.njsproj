@@ -44,6 +44,7 @@
     <Content Include="controllers\userController.js" />
     <Content Include="controllers\wishlistController.js" />
     <Content Include="db.js" />
+    <Content Include="fonts\Arial.ttf" />
     <Content Include="models\cart.js" />
     <Content Include="models\category.js" />
     <Content Include="models\comment.js" />
@@ -91,6 +92,7 @@
   <ItemGroup>
     <Folder Include="models\" />
     <Folder Include="controllers\" />
+    <Folder Include="fonts\" />
     <Folder Include="tests\" />
     <Folder Include="public\" />
     <Folder Include="public\images\" />
