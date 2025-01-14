@@ -204,7 +204,74 @@ const Order = {
         }
 
         return rows[0].name; // E-posta adresini d�nd�r
+    },
+    createRefundRequest: async (user_id, order_id, product_id, refund_amount) => {
+        const query = `
+            INSERT INTO returns (user_id, order_id, product_id, refund_amount)
+            VALUES (?, ?, ?, ?);
+        `;
+        const [result] = await pool.execute(query, [user_id, order_id, product_id, refund_amount]);
+        return result.insertId;
+    },
+
+    validateRefund: async (user_id, order_id, product_id) => {
+        const query = `
+            SELECT o.created_at
+            FROM orders o
+            JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.user_id = ? AND o.order_id = ? AND oi.product_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [user_id, order_id, product_id]);
+
+        if (rows.length === 0) return false;
+
+        const orderDate = new Date(rows[0].created_at);
+        const now = new Date();
+        const diffDays = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+        return diffDays <= 30;
+    },
+
+    updateRefundStatus: async (return_id, status) => {
+        const query = `
+            UPDATE returns
+            SET status = ?
+            WHERE return_id = ?;
+        `;
+        const [result] = await pool.execute(query, [status, return_id]);
+        return result.affectedRows > 0;
+    },
+
+    getRefundAmount: async (order_id, product_id) => {
+        const query = `
+            SELECT price, quantity
+            FROM order_items
+            WHERE order_id = ? AND product_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [order_id, product_id]);
+        return rows.length > 0 ? rows[0] : null;
+    },
+
+    getRefundsById: async (id) => {
+        const query = `
+            SELECT r.return_id, r.product_id, r.refund_amount, r.quantity
+            FROM returns r
+            WHERE r.return_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [id]);
+        return rows;
+    },
+
+    getOrderDetails: async (order_id) => {
+        const query = `
+            SELECT o.*, oi.product_id, oi.quantity, oi.price AS item_price
+            FROM orders o
+            JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.order_id = ?;
+        `;
+        const [rows] = await pool.execute(query, [order_id]);
+        return rows.length > 0 ? rows : null;
     }
+
 
 };
 

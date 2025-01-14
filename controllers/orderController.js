@@ -4,6 +4,10 @@ const pool = require('../db');
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
 const nodemailer = require('nodemailer');
+const Return = require('../models/return'); 
+const Product = require('../models/product');
+
+
 
 exports.createOrder = async (req, res) => {
     try {
@@ -290,4 +294,116 @@ exports.sendOrderReceipt = async (req, res) => {
         res.status(500).json({ error: 'Could not send order receipt' });
     }
 };
+
+
+
+exports.createRefundRequest = async (req, res) => {
+    const { user_id, order_id, products } = req.body;
+
+    try {
+        // Sipariş doğrulama
+        const order = await Order.getOrderDetails(order_id, user_id);
+        if (!order) {
+            return res.status(404).json({ error: 'Sipariş bulunamadı' });
+        }
+
+        const refundResults = [];
+
+        for (const product of products) {
+            const { product_id, quantity } = product;
+
+            // Ürün miktarı kontrolü
+            const orderItem = order.find(item => item.product_id === product_id);
+            if (!orderItem || orderItem.quantity < quantity) {
+                refundResults.push({
+                    product_id,
+                    status: 'failed',
+                    message: 'Ürün siparişte bulunmuyor veya miktar yetersiz.'
+                });
+                continue;
+            }
+
+            // Ürün zaten iade edilmiş mi kontrolü
+            if (await Return.isProductAlreadyRefunded(order_id, product_id)) {
+                refundResults.push({
+                    product_id,
+                    status: 'failed',
+                    message: 'Bu ürün için daha önce iade talebi oluşturulmuş.'
+                });
+                continue;
+            }
+
+
+            // İade kayıt ekleme
+            const refundAmount = quantity * orderItem.item_price;
+            const refundId = await Return.create({
+                order_id,
+                product_id,
+                user_id,
+                refund_amount: refundAmount,
+                status: 'pending'
+            });
+
+            // Stok artırma
+            await Product.updateStock(product_id, quantity);
+
+            refundResults.push({
+                product_id,
+                status: 'success',
+                refundId
+            });
+        }
+
+        res.status(200).json({
+            message: 'İade talepleri işlendi.',
+            results: refundResults
+        });
+    } catch (error) {
+        console.error('Refund request error:', error);
+        res.status(500).json({ error: 'Bir hata oluştu' });
+    }
+};
+
+
+
+
+
+
+exports.approveRefund = async (req, res) => {
+    const { id } = req.params; // İade talebi ID'si
+    const { approved } = req.body;
+
+    try {
+        const refundRequests = await Order.getRefundsById(id); // Tüm ilgili iade taleplerini al
+
+        if (!refundRequests.length) {
+            return res.status(404).json({ error: "İade talepleri bulunamadı." });
+        }
+
+        for (let refund of refundRequests) {
+            const { product_id, refund_amount, quantity } = refund;
+
+            if (approved) {
+                // Stoğu güncelle
+                await Product.updateStock(product_id, quantity);
+
+                // Durumu onayla
+                await Order.updateRefundStatus(refund.return_id, 'approved');
+            } else {
+                // Durumu reddet
+                await Order.updateRefundStatus(refund.return_id, 'rejected');
+            }
+        }
+
+        res.status(200).json({
+            message: approved ? "İade talepleri onaylandı." : "İade talepleri reddedildi."
+        });
+    } catch (error) {
+        console.error("Refund approval error:", error.message);
+        res.status(500).json({ error: "İade talepleri işlenemedi." });
+    }
+};
+
+
+
 

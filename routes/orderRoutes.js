@@ -27,4 +27,10 @@ router.get('/user-products/:id', orderController.getPurchasedProducts);
 // To send order receipt PDF to mail
 router.post('/:id/sendPDF', orderController.sendOrderReceipt);
 
+// Ýade talebi
+router.post('/refund/request', orderController.createRefundRequest);
+
+// Ýade taleplerini onaylama/reddetme
+router.put('/refund/approve/:id', orderController.approveRefund);
+
 module.exports = router;

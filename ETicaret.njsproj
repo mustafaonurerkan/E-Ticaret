@@ -51,6 +51,7 @@
     <Content Include="models\order.js" />
     <Content Include="models\payment.js" />
     <Content Include="models\product.js" />
+    <Content Include="models\return.js" />
     <Content Include="models\user.js" />
     <Content Include="models\wishlist.js" />
     <Content Include="routes\authRoutes.js" />
