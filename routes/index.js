@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-
+// Ana rota - Giri? sayfas?
 router.get('/', (req, res) => {
     res.send(`
         <html lang="en">
@@ -65,6 +65,7 @@ router.get('/', (req, res) => {
     `);
 });
 
+// Di?er rotalar
 const authRoutes = require('./authRoutes');
 const cartRoutes = require('./cartRoutes');
 const categoryRoutes = require('./categoryRoutes');
