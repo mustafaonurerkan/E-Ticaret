@@ -8,7 +8,7 @@ exports.createComment = async (req, res) => {
             return res.status(403).json({ error: 'You cannot comment on a product you have not purchased.' });
         }
 
-        // Yorum ekleme iþlemi
+        // Yorum ekleme iï¿½lemi
         const commentId = await Comment.create({ user_id, product_id, rating, content });
         res.status(201).json({ message: 'Comment added successfully', comment_id: commentId });
     } catch (error) {
@@ -61,7 +61,7 @@ exports.approveComment = async (req, res) => {
     const { user_id, comment_id } = req.body;
 
     try {
-        // Kullanýcýnýn rolünü kontrol et
+        // Kullanï¿½cï¿½nï¿½n rolï¿½nï¿½ kontrol et
         const role = await Comment.getUserRole(user_id);
         if (role !== 'product_manager') {
             return res.status(403).json({ error: 'You do not have permission to approve comments' });
@@ -81,3 +81,23 @@ exports.approveComment = async (req, res) => {
 };
 
 
+exports.createReview = async (req, res) => {
+    const { user_id, product_id, rating, content } = req.body;
+
+    if (!content || !rating) {
+        return res.status(400).json({ error: 'Both rating and comment content are required.' });
+    }
+
+    try {
+        const hasPurchased = await Comment.hasPurchased(user_id, product_id);
+        if (!hasPurchased) {
+            return res.status(403).json({ error: 'You can only review products you have purchased.' });
+        }
+
+        const commentId = await Comment.create({ user_id, product_id, rating, content });
+        res.status(201).json({ message: 'Review added successfully', comment_id: commentId });
+    } catch (error) {
+        console.error('Error creating review:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
